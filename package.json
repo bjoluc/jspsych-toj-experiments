@@ -4,7 +4,10 @@
   "description": "Browser-based TOJ experiments using jsPsych",
   "main": "gulpfile.babel.js",
   "scripts": {
-    "start": "gulp --dev"
+    "start": "gulp --dev",
+    "dev": "gulp build --dev",
+    "build": "gulp build --production",
+    "package": "gulp package --production"
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",

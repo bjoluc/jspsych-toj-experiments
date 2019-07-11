@@ -83,10 +83,8 @@ const webpack = {
           exclude: /node_modules(?![\\\/]jspsych)/
         }
       ]
-    }
-    // optimization: {
-    //   minimize: false
-    // },
+    },
+    mode: PRODUCTION ? 'production' : 'development'
   },
 
   changeHandler(err, stats) {
