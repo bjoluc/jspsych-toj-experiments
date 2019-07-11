@@ -2,73 +2,63 @@ import "jspsych/plugins/jspsych-html-keyboard-response"
 import "jspsych/plugins/jspsych-fullscreen"
 import "./jspsych-temporal-order-judgement"
 
-var timeline = [];
+let timeline = [];
 
-var welcome = {
+// Welcome screen
+timeline.push({
     type: "html-keyboard-response",
     stimulus: "<p>Thank you for taking the time to participate in WebTOJ!<p/>" +
         "<p>Press any key to begin.</p>"
-};
-timeline.push(welcome);
+});
 
+// Switch to fullscreen
 timeline.push({
     type: 'fullscreen',
     fullscreen_mode: true
 });
 
-var instructions = {
+// Instructions
+timeline.push({
     type: "html-keyboard-response",
-    stimulus: "<p>In this experiment, a circle will appear in the center " +
-        "of the screen.</p><p>If the circle is <strong>blue</strong>, " +
-        "press the letter F on the keyboard as fast as you can.</p>" +
-        "<p>If the circle is <strong>orange</strong>, press the letter J " +
-        "as fast as you can.</p>" +
-        "<div style='width: 700px;'>"+
-        "<div style='float: left;'><img src='images/blue.png'></img>" +
-        "<p class='small'><strong>Press the F key</strong></p></div>" +
-        "<div class='float: right;'><img src='images/orange.png'></img>" +
-        "<p class='small'><strong>Press the J key</strong></p></div>" +
-        "</div>"+
-        "<p>Press any key to begin.</p>",
-    post_trial_gap: 2000
+    stimulus: "<p>Some handy instruction text.</p>"+
+        "<p>Press any key to start the experiment.</p>"
+});
+
+
+// Generate trials
+let factors = {
+    probe_image: ["images/blue.png"],
+    reference_image: ["images/orange.png"],
+    soa: [-10,-8,-5,-3,-2,-1,0,1,2,3,5,8,10].map(x => x * 10)
 };
-timeline.push(instructions);
+let repetitions = 2;
+let trials = jsPsych.randomization.factorial(factors, repetitions);
+console.log(trials)
 
-
-var trial_conditions = [
-    {
-        probe_image: "images/blue.png",
-        reference_image: "images/orange.png",
-        soa: 300
-    },
-];
-
-var fixation = {
-    type: 'html-keyboard-response',
-    stimulus: '<div style="font-size:30px;">+</div>',
-    choices: jsPsych.NO_KEYS,
-    trial_duration: function(){
-        return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000], 1)[0];
-    }
-}
-
-var toj = {
+// Create TOJ object
+let toj = {
     type:            "temporal-order-judgement",
     probe_image:     jsPsych.timelineVariable('probe_image'),
     reference_image: jsPsych.timelineVariable('reference_image'),
     soa:             jsPsych.timelineVariable('soa'),
+    probe_properties: {
+        width: 100,
+        height: 100,
+        x: -200,
+    },
+    reference_properties: {
+        width: 100,
+        height: 100,
+        x: 200,
+    },
     probe_key:       'tab',
     reference_key:   'enter',
 }
 
-var trial_procedure = {
-    timeline: [fixation, toj],
-    timeline_variables: trial_conditions,
-    randomize_order: true, // order of the timeline variables
-    repetitions: 2
-}
-
-timeline.push(trial_procedure);
+timeline.push({
+    timeline: [toj],
+    timeline_variables: trials
+});
 
 jsPsych.init({
     timeline: timeline,
