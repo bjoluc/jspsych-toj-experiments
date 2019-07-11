@@ -6,9 +6,17 @@
  * @license MIT
  */
 
+"use strict";
+
+import "@babel/polyfill" // for async function support
+
+function Sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 jsPsych.plugins['temporal-order-judgement'] = (function() {
 
-    var plugin = {};
+    let plugin = {};
   
     plugin.info = {
         name: 'temporal-order-judgement',
@@ -25,17 +33,17 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
                 default: undefined,
                 description: 'The image to be used as the TOJ reference'
             },
-            probe_image_properties: {
+            probe_properties: {
                 type: jsPsych.plugins.parameterType.OBJECT,
                 pretty_name: 'Probe image properties',
-                default: undefined,
-                description: '(optional) An object containing optional image properties. Allowed property keys are: `height`, `width`, and `css`.'
+                default: {},
+                description: '(optional) An object containing optional image properties. Allowed property keys are: `height`, `width`, `x`, `y`, and `css`.'
             },
-            reference_image_properties: {
+            reference_properties: {
                 type: jsPsych.plugins.parameterType.OBJECT,
                 pretty_name: 'Reference image properties',
-                default: undefined,
-                description: '(optional) An object containing optional image properties. Allowed property keys are: `height`, `width`, and `css`.'
+                default: {},
+                description: '(optional) An object containing optional image properties. Allowed property keys are: `height`, `width`, `x`, `y`, and `css`.'
             },
             fixation_mark_html: {
                 type: jsPsych.plugins.parameterType.HTML_STRING,
@@ -70,18 +78,18 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
         }
     }
   
-    plugin.trial = function(display_element, trial) {
+    plugin.trial = async function(display_element, trial) {
         // Create container div
-        var container = document.createElement("div");
+        let container = document.createElement("div");
         container.id = 'jspsych-temporal-order-judgement-container';
         container.innerHTML = trial.fixation_mark_html;
         display_element.appendChild(container);
         
         // Function to create hidden stimulus image elements
-        var createStimulusImageElement = function(container, imageSrc, cssClass, imageProperties) {
-            var imagePropertiesDefined = typeof imageProperties != 'undefined';
+        let createStimulusImageElement = function(container, imageSrc, cssClass, imageProperties) {
+            let imagePropertiesDefined = typeof imageProperties != 'undefined';
 
-            var image = document.createElement("img");
+            let image = document.createElement("img");
             
             if(imagePropertiesDefined && imageProperties.hasOwnProperty('css')) {
                 image.style = imageProperties['css'];
@@ -89,7 +97,7 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
             
             image.style.visibility = 'hidden';
             image.className = cssClass;
-            image.src = imageSrc
+            image.src = imageSrc;
 
             if(imagePropertiesDefined) {
                 if (imageProperties.hasOwnProperty('width')) {
@@ -98,6 +106,12 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
                 if (imageProperties.hasOwnProperty('height')) {
                     image.setAttribute('height', imageProperties['height']);
                 };
+                if (imageProperties.hasOwnProperty('x')) {
+                    image.style.marginLeft = imageProperties['x'] + "px";
+                };
+                if (imageProperties.hasOwnProperty('y')) {
+                    image.style.marginTop = imageProperties['y'] + "px";
+                };
             }
 
             container.appendChild(image);
@@ -105,38 +119,37 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
         }
 
         // Create stimulus image elements
-        probe = createStimulusImageElement(container, trial.probe_image, 'toj-probe', trial.probe_image_properties);
-        reference = createStimulusImageElement(container, trial.reference_image, 'toj-reference', trial.reference_image_properties);
+        let probe = createStimulusImageElement(container, trial.probe_image, 'toj-probe', trial.probe_properties);
+        let reference = createStimulusImageElement(container, trial.reference_image, 'toj-reference', trial.reference_properties);
 
-        // Function for showing an element, optionally after a specified time
-        var showElement = function(element, timeout) {
-            var show = function() {
-                element.style.visibility = 'visible';
-            }
-            if (typeof timeout === 'undefined' || timeout === 0) {
-                show()
-            } else {
-                jsPsych.pluginAPI.setTimeout(show, timeout);
-            }
+        // Function for showing an element
+        let showElement = function(element) {
+            element.style.visibility = 'visible';
         }
+
+        await Sleep(trial.fixation_time);
 
         // Show images according to SOA
         if (trial.soa < 0) {
-            showElement(probe)
-            showElement(reference, -trial.soa)
+            showElement(probe);
+            await Sleep(-trial.soa);
+            showElement(reference);
         } else {
             showElement(reference)
-            showElement(probe, trial.soa)
+            if (trial.soa != 0) {
+                await Sleep(trial.soa);
+            }
+            showElement(probe);
         }
 
         // Variable for keyboard response
-        var keyboardResponse = {
+        let keyboardResponse = {
             rt: null,
             key: null
         };
 
         // Function to handle subject responses
-        var on_response = function(info) {
+        let on_response = function(info) {
 
             // Only react to the first response
             if (keyboardResponse.key != null) return;
@@ -149,8 +162,8 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
             display_element.innerHTML = '';
 
             // Process the response
-            var responseKey = jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(keyboardResponse.key);
-            var response = null;
+            let responseKey = jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(keyboardResponse.key);
+            let response = null;
             switch(responseKey) {
                 case trial.probe_key:
                     response = 'probe';
@@ -160,22 +173,24 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
                     break;
             }
 
-            var correct = (trial.soa <= 0 && response == 'probe') || (trial.soa >= 0 && response == 'reference');
+            let correct = (trial.soa <= 0 && response == 'probe') || (trial.soa >= 0 && response == 'reference');
 
             // Finish trial and log data
             jsPsych.finishTrial({
-                probe_image:      trial.probe_image,
-                reference_image:  trial.reference_image,
-                soa:              trial.soa,
-                response_key:     responseKey,
-                response:         response,
-                response_correct: correct,
-                rt:               keyboardResponse.rt
+                probe_image:          trial.probe_image,
+                reference_image:      trial.reference_image,
+                probe_properties:     trial.probe_properties,
+                reference_properties: trial.reference_properties,
+                soa:                  trial.soa,
+                response_key:         responseKey,
+                response:             response,
+                response_correct:     correct,
+                rt:                   keyboardResponse.rt
             });
         };
 
         // Start the response listener
-        var keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
+        let keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
             callback_function: on_response,
             valid_responses: [trial.probe_key, trial.reference_key],
             rt_method: 'performance',

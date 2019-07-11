@@ -1,7 +1,15 @@
 #jspsych-temporal-order-judgement-container {
-    position: relative;
+
+    .toj-fixation-mark, .toj-probe, .toj-reference {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+        user-select: none; // disable text/image selection
+    }
 
     .toj-fixation-mark {
-        color: #8a8a8a;
+        color: #6e6e6e;
+        font-size: 30px;
     }
 }
