@@ -67,7 +67,7 @@ jsPsych.plugins['temporal-order-judgement'] = (function() {
                 type: jsPsych.plugins.parameterType.KEYCODE,
                 pretty_name: 'Probe key',
                 default: undefined,
-                description: 'The key that the subject uses to select the'
+                description: 'The key that the subject uses to select the probe'
             },
             reference_key: {
                 type: jsPsych.plugins.parameterType.KEYCODE,
