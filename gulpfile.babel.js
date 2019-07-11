@@ -5,6 +5,7 @@ import gulp from "gulp";
 import yargs from "yargs";
 import rimraf from "rimraf";
 import fs from "fs";
+import dateFormat from "dateformat";
 import yaml from "js-yaml";
 import webpackStream from "webpack-stream";
 import webpack2 from "webpack";
@@ -175,6 +176,23 @@ function watch() {
     );
 }
 
+// Create a .zip archive for JATOS import
+function archive() {
+  let time = dateFormat(new Date(), "yyyy-mm-dd_HH-MM");
+  let pkg = JSON.parse(fs.readFileSync("./package.json"));
+  let title = pkg.name + "_" + time + ".zip";
+
+  return gulp
+    .src(PATHS.dist + "/**/*")
+    .pipe(
+      $.rename(function(file) {
+        file.dirname = pkg.name + "/" + file.dirname;
+      })
+    )
+    .pipe($.zip(title))
+    .pipe(gulp.dest("packaged"));
+}
+
 gulp.task(
   "build",
   gulp.series(
@@ -182,6 +200,8 @@ gulp.task(
     gulp.parallel(copy, html, sass, "webpack:build", externaljs, externalcss)
   )
 );
+
+gulp.task("package", gulp.series("build", archive));
 
 // Default task: Copy files, compile sass and watch for changes
 gulp.task(

@@ -19,14 +19,3 @@ PATHS:
     - "node_modules/jspsych/jspsych.js"
   externalcss:
     - "node_modules/jspsych/css/jspsych.css"
-  # Paths for the package task to include/exclude in .zip archive
-  package:
-    - "**/*"
-    - "!**/node_modules/**"
-    - "!**/packaged/**"
-    - "!/src/**"
-    - "!**/config.yml"
-    - "!**/gulpfile.js"
-    - "!**/package.json"
-    - "!**/package-lock.json"
-    - "!**/docker-compose.yml"
