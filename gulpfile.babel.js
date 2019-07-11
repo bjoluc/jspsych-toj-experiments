@@ -84,7 +84,7 @@ const webpack = {
         }
       ]
     },
-    mode: PRODUCTION ? 'production' : 'development'
+    mode: PRODUCTION ? "production" : "development"
   },
 
   changeHandler(err, stats) {
@@ -150,11 +150,16 @@ gulp.task("webpack:build", webpack.build);
 gulp.task("webpack:watch", webpack.watch);
 
 function externaljs() {
-  return gulp.src(PATHS.externaljs)
+  return gulp
+    .src(PATHS.externaljs)
     .pipe($.sourcemaps.init())
     .pipe($.uglify())
     .pipe($.sourcemaps.write())
     .pipe(gulp.dest(PATHS.dist + "/js"));
+}
+
+function externalcss() {
+  return gulp.src(PATHS.externalcss).pipe(gulp.dest(PATHS.dist + "/css"));
 }
 
 function watch() {
@@ -174,7 +179,7 @@ gulp.task(
   "build",
   gulp.series(
     clean,
-    gulp.parallel(copy, html, sass, "webpack:build", externaljs)
+    gulp.parallel(copy, html, sass, "webpack:build", externaljs, externalcss)
   )
 );
 

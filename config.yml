@@ -17,6 +17,8 @@ PATHS:
     - "src/js/app.js"
   externaljs:
     - "node_modules/jspsych/jspsych.js"
+  externalcss:
+    - "node_modules/jspsych/css/jspsych.css"
   # Paths for the package task to include/exclude in .zip archive
   package:
     - "**/*"
