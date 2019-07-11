@@ -1,0 +1,30 @@
+# Set to true if you want static asset revisioning, helpful for cache busting
+REVISIONING: false
+
+# Gulp will reference these paths when it copies files
+PATHS:
+  # Path to dist folder
+  dist: "dist"
+  # Paths to static assets that aren't images, CSS, or JavaScript
+  assets:
+    - "src/**/*"
+    - "!src/{js,scss,html}/**"
+  # Paths to Sass libraries, which can then be loaded with @import
+  sass:
+  
+  # Paths to JavaScript entry points for webpack to bundle modules
+  entries:
+    - "src/js/app.js"
+  externaljs:
+    - "node_modules/jspsych/jspsych.js"
+  # Paths for the package task to include/exclude in .zip archive
+  package:
+    - "**/*"
+    - "!**/node_modules/**"
+    - "!**/packaged/**"
+    - "!/src/**"
+    - "!**/config.yml"
+    - "!**/gulpfile.js"
+    - "!**/package.json"
+    - "!**/package-lock.json"
+    - "!**/docker-compose.yml"

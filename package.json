@@ -2,18 +2,50 @@
   "name": "webtoj",
   "version": "1.0.0",
   "description": "Browser-based TOJ experiments using jsPsych",
-  "main": "index.js",
+  "main": "gulpfile.babel.js",
+  "scripts": {
+    "start": "gulp --dev"
+  },
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
     "jspsych": "^6.0.0"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "devDependencies": {
+    "@babel/cli": "^7.5.0",
+    "@babel/core": "^7.5.4",
+    "@babel/preset-env": "^7.5.4",
+    "@babel/register": "^7.4.4",
+    "ansi-colors": "^4.1.1",
+    "babel-loader": "^8.0.6",
+    "fancy-log": "^1.3.3",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^6.1.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-clean-css": "^4.2.0",
+    "gulp-if": "^2.0.2",
+    "gulp-load-plugins": "^2.0.0",
+    "gulp-remote-src": "^0.4.4",
+    "gulp-rev": "^9.0.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-uglify": "^3.0.2",
+    "js-yaml": "^3.13.1",
+    "node-sass": "^4.12.0",
+    "rimraf": "^2.6.3",
+    "vinyl-named": "^1.1.0",
+    "webpack": "^4.35.3",
+    "webpack-stream": "^5.2.1",
+    "yargs": "^13.2.4"
   },
   "repository": {
     "type": "git",
     "url": "git@git.uni-paderborn.de:bjoluc/webtoj.git"
   },
+  "browserslist": [
+    "last 2 versions",
+    "ie >= 9",
+    "ios >= 7"
+  ],
   "author": "bjoluc",
-  "license": "GNU-GPL-v3-or-later"
+  "license": "MIT"
 }
