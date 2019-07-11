@@ -27,8 +27,8 @@ timeline.push({
 
 // Generate trials
 let factors = {
-    probe_image: ["images/blue.png"],
-    reference_image: ["images/orange.png"],
+    probe_image: ["images/gray.png"],
+    reference_image: ["images/gray.png"],
     soa: [-10,-8,-5,-3,-2,-1,0,1,2,3,5,8,10].map(x => x * 10)
 };
 let repetitions = 2;
