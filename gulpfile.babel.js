@@ -12,6 +12,8 @@ import webpack2 from "webpack";
 import named from "vinyl-named";
 import log from "fancy-log";
 import colors from "ansi-colors";
+import uuidv4 from "uuid/v4";
+import slugify from "slugify";
 
 // Load all Gulp plugins into one variable
 const $ = plugins();
@@ -19,17 +21,26 @@ const $ = plugins();
 // Check for --production flag
 const PRODUCTION = !!yargs.argv.production;
 
-// Check for --development flag unminified with sourcemaps
+// Check for --development flag (unminified with sourcemaps)
 const DEV = !!yargs.argv.dev;
 
-// Load settings from settings.yml
-const { REVISIONING, PATHS } = loadConfig();
-
-// Load YML config file
+// Function to load a YAML config file
 function loadConfig() {
   log("Loading", colors.bold(colors.cyan("config.yml")), "...");
   let ymlFile = fs.readFileSync("config.yml", "utf8");
   return yaml.load(ymlFile);
+}
+
+// Load settings from settings.yml
+const { META, REVISIONING, PATHS } = loadConfig();
+
+// Auto-generate a slug if no slug is specified
+if (META.slug == null) {
+  META.slug = slugify(META.title, {
+    lower: true,
+    replacement: "_",
+    remove: /"<>#%\{\}\|\\\^~\[\]`;\?:@=&/g
+  });
 }
 
 sass.compiler = require("node-sass");
@@ -45,7 +56,17 @@ function copy() {
 }
 
 function html() {
-  return gulp.src("src/html/**/*").pipe(gulp.dest(PATHS.dist));
+  return gulp
+    .src("src/html/**/*")
+    .pipe(
+      $.htmlReplace({
+        title: {
+          src: META.title,
+          tpl: "<title>%s</title>"
+        }
+      })
+    )
+    .pipe(gulp.dest(PATHS.dist));
 }
 
 // Compile Sass into CSS
@@ -176,19 +197,60 @@ function watch() {
     );
 }
 
+function getJatosStudyJsonString() {
+  let study = {
+    version: "3",
+    data: {
+      uuid: uuidv4(),
+      title: META.title,
+      description: META.jatosDescription,
+      groupStudy: false,
+      dirName: META.slug,
+      comments: "",
+      jsonData: null,
+      componentList: [
+        {
+          uuid: uuidv4(),
+          title: "Experiment",
+          htmlFilePath: "index.html",
+          reloadable: true,
+          active: true,
+          comments: "",
+          jsonData: ""
+        }
+      ],
+      batchList: [
+        {
+          uuid: uuidv4(),
+          title: "Default",
+          active: true,
+          maxActiveMembers: null,
+          maxTotalMembers: null,
+          maxTotalWorkers: null,
+          allowedWorkerTypes: null,
+          comments: null,
+          jsonData: null
+        }
+      ]
+    }
+  };
+  return JSON.stringify(study);
+}
+
 // Create a .zip archive for JATOS import
 function archive() {
-  let time = dateFormat(new Date(), "yyyy-mm-dd_HH-MM");
-  let pkg = JSON.parse(fs.readFileSync("./package.json"));
-  let title = pkg.name + "_" + time + ".zip";
+  let time = dateFormat(new Date(), "yyyy-mm-dd_HH-MM-ss");
+  let title = META.slug + "_" + time + ".zip";
+  let jatosStudyJsonString = getJatosStudyJsonString();
 
   return gulp
     .src(PATHS.dist + "/**/*")
     .pipe(
       $.rename(function(file) {
-        file.dirname = pkg.name + "/" + file.dirname;
+        file.dirname = META.slug + "/" + file.dirname;
       })
     )
+    .pipe($.file(META.slug + ".jas", jatosStudyJsonString))
     .pipe($.zip(title))
     .pipe(gulp.dest("packaged"));
 }
