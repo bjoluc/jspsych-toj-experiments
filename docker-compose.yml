@@ -11,15 +11,13 @@ services:
       - .:/home/node/app
     command: bash -c "npm install && npm start"
   
-  # jatos:
-  #   user: "root"
-  #   image: jatos/jatos:latest
-  #   expose:
-  #     - "9000"
-  #   ports:
-  #     - "9000:9000"
-  #   volumes:
-  #     - ./jatos_assets:/opt/docker/study_assets_root
-  #   restart: always
+  jatos:
+    user: "root"
+    image: jatos/jatos:latest
+    expose:
+      - "9000"
+    ports:
+      - "9000:9000"
+    restart: always
 
   
