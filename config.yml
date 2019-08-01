@@ -1,9 +1,4 @@
-META:
-  title: "WebTOJ"
-  slug: # Auto-generated if left empty
-  jatosDescription: "Browser-based TOJ experiment"
-  jatosJsonInput:
-    # Data to be used as jatos JSON input. The yaml format has to be used here.
+METAFILE: webtoj.yml
 
 # Set to true if you want static asset revisioning, helpful for cache busting
 REVISIONING: false

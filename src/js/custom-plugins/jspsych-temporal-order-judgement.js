@@ -8,7 +8,9 @@
 
 "use strict";
 
-import "@babel/polyfill" // for async function support
+// async function support
+import "core-js/stable"; 
+import "regenerator-runtime/runtime";
 
 function Sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));

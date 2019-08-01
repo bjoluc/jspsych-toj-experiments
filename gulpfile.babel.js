@@ -25,14 +25,16 @@ const PRODUCTION = !!yargs.argv.production;
 const DEV = !!yargs.argv.dev;
 
 // Function to load a YAML config file
-function loadConfig() {
-  log("Loading", colors.bold(colors.cyan("config.yml")), "...");
-  let ymlFile = fs.readFileSync("config.yml", "utf8");
+function loadYmlFile(filename) {
+  log("Loading", colors.bold(colors.cyan(filename)), "...");
+  let ymlFile = fs.readFileSync(filename, "utf8");
   return yaml.load(ymlFile);
 }
 
 // Load settings from settings.yml
-const { META, REVISIONING, PATHS } = loadConfig();
+const { METAFILE, REVISIONING, PATHS } = loadYmlFile("config.yml");
+
+const META = loadYmlFile("src/meta/" + METAFILE);
 
 // Auto-generate a slug if no slug is specified
 if (META.slug == null) {

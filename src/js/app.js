@@ -1,4 +1,4 @@
-import createTimeline from "./timeline";
+import { createTimeline } from "./experiments/webtoj";
 
 if (typeof jatos != "undefined") {
   // Experiment is served by JATOS
