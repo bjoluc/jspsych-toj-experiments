@@ -55,19 +55,40 @@ function copy() {
   return gulp.src(PATHS.assets).pipe(gulp.dest(PATHS.dist));
 }
 
-function html() {
-  return gulp
-    .src("src/html/**/*")
-    .pipe(
-      $.htmlReplace({
-        title: {
-          src: META.title,
-          tpl: "<title>%s</title>"
-        }
-      })
-    )
-    .pipe(gulp.dest(PATHS.dist));
-}
+const html = {
+  _build(includeJatos) {
+    let htmlReplacements = {
+      title: {
+        src: META.title,
+        tpl: "<title>%s</title>"
+      }
+    };
+
+    if (includeJatos) {
+      htmlReplacements.jatosjs = "/assets/javascripts/jatos.js";
+    }
+
+    return gulp
+      .src("src/html/**/*")
+      .pipe($.htmlReplace(htmlReplacements))
+      .pipe(
+        $.inject(gulp.src(PATHS.dist + "/css/**/*"), {
+          addRootSlash: false,
+          ignorePath: "dist"
+        })
+      )
+      .pipe($.removeEmptyLines({ removeComments: true }))
+      .pipe(gulp.dest(PATHS.dist));
+  },
+
+  local() {
+    return html._build(false);
+  },
+
+  jatos() {
+    return html._build(true);
+  }
+};
 
 // Compile Sass into CSS
 // In production, the CSS is compressed
@@ -168,25 +189,25 @@ const webpack = {
   }
 };
 
-gulp.task("webpack:build", webpack.build);
-gulp.task("webpack:watch", webpack.watch);
-
 function externaljs() {
   return gulp
     .src(PATHS.externaljs)
-    .pipe($.sourcemaps.init())
+    .pipe($.if(!PRODUCTION, $.sourcemaps.init()))
     .pipe($.uglify())
-    .pipe($.sourcemaps.write())
+    .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
     .pipe(gulp.dest(PATHS.dist + "/js"));
 }
 
 function externalcss() {
-  return gulp.src(PATHS.externalcss).pipe(gulp.dest(PATHS.dist + "/css"));
+  return gulp
+    .src(PATHS.externalcss)
+    .pipe($.if(PRODUCTION, $.cleanCss({ compatibility: "ie9" })))
+    .pipe(gulp.dest(PATHS.dist + "/css"));
 }
 
 function watch() {
   gulp.watch(PATHS.assets, copy);
-  gulp.watch("src/html/**/*", html);
+  gulp.watch("src/html/**/*", html.local);
   gulp
     .watch("src/scss/**/*.scss", sass)
     .on("change", path =>
@@ -197,7 +218,7 @@ function watch() {
     );
 }
 
-function getJatosStudyJsonString() {
+function getJatosStudyDescription() {
   let study = {
     version: "3",
     data: {
@@ -207,7 +228,7 @@ function getJatosStudyJsonString() {
       groupStudy: false,
       dirName: META.slug,
       comments: "",
-      jsonData: null,
+      jsonData: JSON.stringify(META.jatosJsonInput),
       componentList: [
         {
           uuid: uuidv4(),
@@ -229,19 +250,19 @@ function getJatosStudyJsonString() {
           maxTotalWorkers: null,
           allowedWorkerTypes: null,
           comments: null,
-          jsonData: null
+          jsonData: ""
         }
       ]
     }
   };
-  return JSON.stringify(study);
+  return study;
 }
 
 // Create a .zip archive for JATOS import
 function archive() {
   let time = dateFormat(new Date(), "yyyy-mm-dd_HH-MM-ss");
   let title = META.slug + "_" + time + ".zip";
-  let jatosStudyJsonString = getJatosStudyJsonString();
+  let jatosStudyJsonString = JSON.stringify(getJatosStudyDescription());
 
   return gulp
     .src(PATHS.dist + "/**/*")
@@ -255,18 +276,33 @@ function archive() {
     .pipe(gulp.dest("packaged"));
 }
 
-gulp.task(
-  "build",
-  gulp.series(
-    clean,
-    gulp.parallel(copy, html, sass, "webpack:build", externaljs, externalcss)
+exports.build = gulp.series(
+  clean,
+  gulp.parallel(
+    copy,
+    sass,
+    externaljs,
+    externalcss,
+    webpack.build,
+    gulp.series(sass, externalcss, html.local)
   )
 );
 
-gulp.task("package", gulp.series("build", archive));
+exports.package = gulp.series(
+  clean,
+  gulp.parallel(
+    copy,
+    sass,
+    externaljs,
+    externalcss,
+    webpack.build,
+    gulp.series(sass, externalcss, html.jatos)
+  ),
+  archive
+);
 
-// Default task: Copy files, compile sass and watch for changes
-gulp.task(
-  "default",
-  gulp.series("build", gulp.parallel(watch, "webpack:watch"))
+// Default task: Build and watch for changes
+exports.default = gulp.series(
+  exports.build,
+  gulp.parallel(watch, webpack.watch)
 );
