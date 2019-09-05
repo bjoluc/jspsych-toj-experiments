@@ -60,7 +60,7 @@ export class TojPlugin {
       fixation_mark_html: {
         type: jsPsych.plugins.parameterType.HTML_STRING,
         pretty_name: "Fixation mark HTML code",
-        default: "<div class='toj-fixation-mark'>+</div>",
+        default: "<img class='toj-fixation-mark' src='./images/fixmark.png'></div>",
         description: "(optional) The HTML code of the fixation mark",
       },
       fixation_time: {
