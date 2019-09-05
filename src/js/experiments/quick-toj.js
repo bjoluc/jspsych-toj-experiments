@@ -2,7 +2,7 @@
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
-import tojPlugin from "../custom-plugins/jspsych-temporal-order-judgement";
+import tojPlugin from "../plugins/jspsych-temporal-order-judgement";
 
 import TouchAdapter from "../TouchAdapter";
 import randomInt from "random-int";
@@ -30,17 +30,17 @@ class ConditionGenerator {
     return (orientation + 9) % 18;
   }
 
-  static _generateRandomPos() {
+  static _generateRandomPos(xRange, yRange) {
     return [
-      randomInt(2, 5) * ConditionGenerator.gridSize,
-      randomInt(2, 5) * ConditionGenerator.gridSize,
+      randomInt(...xRange) * ConditionGenerator.gridSize,
+      randomInt(...yRange) * ConditionGenerator.gridSize,
     ];
   }
 
-  generatePosition(identifier) {
-    let pos = ConditionGenerator._generateRandomPos();
+  generatePosition(identifier, xRange = [2, 5], yRange = [2, 5]) {
+    let pos = ConditionGenerator._generateRandomPos(xRange, yRange);
     while (pos == this.previousPositions[identifier]) {
-      pos = ConditionGenerator._generateRandomPos();
+      pos = ConditionGenerator._generateRandomPos(xRange, yRange);
     }
     this.previousPositions[identifier] = pos;
     return pos;
@@ -58,8 +58,8 @@ class ConditionGenerator {
       cond.oriRef = cond.oriLeft;
     }
 
-    cond.posLeft = this.generatePosition("left");
-    cond.posRight = this.generatePosition("right");
+    cond.posLeft = this.generatePosition("left", [3, 5]);
+    cond.posRight = this.generatePosition("right", [2, 4]);
 
     if (probeLeft) {
       cond.posProbe = cond.posLeft;
@@ -295,7 +295,7 @@ export function createTimeline(jatosStudyInput) {
       if (block < blockCount) {
         return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
       } else {
-        return "<p>This part of the experiment is finished. Thanks for participating!</p>";
+        return "<p>This part of the experiment is finished. Press any key to save the results!</p>";
       }
     },
     on_load: bindSpaceTouchAdapterToWindow,
