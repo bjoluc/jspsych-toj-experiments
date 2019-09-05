@@ -12,28 +12,27 @@ export function createTimeline(jatosStudyInput) {
     type: "html-keyboard-response",
     stimulus:
       "<p>Thank you for taking the time to participate in WebTOJ!<p/>" +
-      "<p>Press any key to begin.</p>"
+      "<p>Press any key to begin.</p>",
   });
 
   // Switch to fullscreen
   timeline.push({
     type: "fullscreen",
-    fullscreen_mode: true
+    fullscreen_mode: true,
   });
 
   // Instructions
   timeline.push({
     type: "html-keyboard-response",
     stimulus:
-      "<p>Some handy instruction text.</p>" +
-      "<p>Press any key to start the experiment.</p>"
+      "<p>Some handy instruction text.</p>" + "<p>Press any key to start the experiment.</p>",
   });
 
   // Generate trials
   let factors = {
     probe_image: ["images/gray.png"],
     reference_image: ["images/gray.png"],
-    soa: [-10, -8, -5, -3, -2, -1, 0, 1, 2, 3, 5, 8, 10].map(x => x * 10)
+    soa: [-10, -8, -5, -3, -2, -1, 0, 1, 2, 3, 5, 8, 10].map(x => x * 10),
   };
   let repetitions = 2;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
@@ -47,21 +46,25 @@ export function createTimeline(jatosStudyInput) {
     probe_properties: {
       width: 100,
       height: 100,
-      x: -200
+      x: -200,
     },
     reference_properties: {
       width: 100,
       height: 100,
-      x: 200
+      x: 200,
     },
     probe_key: "tab",
-    reference_key: "enter"
+    reference_key: "enter",
   };
 
   timeline.push({
     timeline: [toj],
-    timeline_variables: trials
+    timeline_variables: trials,
   });
 
   return timeline;
+}
+
+export function getPreloadImagePaths() {
+  return [];
 }

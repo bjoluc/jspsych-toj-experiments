@@ -1,15 +1,28 @@
 #jspsych-temporal-order-judgement-container {
 
-    .toj-fixation-mark, .toj-probe, .toj-reference {
+    .toj-fixation-mark,
+    .toj-probe,
+    .toj-reference,
+    .toj-background {
         position: absolute;
         left: 50%;
         top: 50%;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%, -50%);
         user-select: none; // disable text/image selection
     }
 
     .toj-fixation-mark {
         color: #6e6e6e;
         font-size: 30px;
+    }
+
+    .toj-fixation-mark,
+    .toj-probe,
+    .toj-reference {
+        z-index: 1;
+    }
+
+    .toj-flash {
+        filter: contrast(0%) brightness(1.5);
     }
 }
