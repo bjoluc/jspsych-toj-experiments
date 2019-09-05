@@ -41,7 +41,7 @@ if (META.slug == null) {
   META.slug = slugify(META.title, {
     lower: true,
     replacement: "_",
-    remove: /"<>#%\{\}\|\\\^~\[\]`;\?:@=&/g
+    remove: /"<>#%\{\}\|\\\^~\[\]`;\?:@=&/g,
   });
 }
 
@@ -62,8 +62,8 @@ const html = {
     let htmlReplacements = {
       title: {
         src: META.title,
-        tpl: "<title>%s</title>"
-      }
+        tpl: "<title>%s</title>",
+      },
     };
 
     if (includeJatos) {
@@ -76,7 +76,7 @@ const html = {
       .pipe(
         $.inject(gulp.src(PATHS.dist + "/css/**/*"), {
           addRootSlash: false,
-          ignorePath: "dist"
+          ignorePath: "dist",
         })
       )
       .pipe($.removeEmptyLines({ removeComments: true }))
@@ -89,7 +89,7 @@ const html = {
 
   jatos() {
     return html._build(true);
-  }
+  },
 };
 
 // Compile Sass into CSS
@@ -99,7 +99,7 @@ function sass() {
     .src(["src/scss/app.scss"])
     .pipe(
       $.sass({
-        includePaths: PATHS.sass
+        includePaths: PATHS.sass,
       }).on("error", $.sass.logError)
     )
     .pipe($.autoprefixer())
@@ -107,12 +107,7 @@ function sass() {
     .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
     .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev()))
     .pipe(gulp.dest(PATHS.dist + "/css"))
-    .pipe(
-      $.if(
-        (REVISIONING && PRODUCTION) || (REVISIONING && DEV),
-        $.rev.manifest()
-      )
-    )
+    .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev.manifest()))
     .pipe(gulp.dest(PATHS.dist + "/css"));
 }
 
@@ -125,79 +120,75 @@ const webpack = {
         {
           test: /.js$/,
           loader: "babel-loader",
-          exclude: /node_modules(?![\\\/]jspsych)/
-        }
-      ]
+          exclude: /node_modules(?![\\\/]jspsych)/,
+        },
+      ],
     },
-    mode: PRODUCTION ? "production" : "development"
+    mode: PRODUCTION ? "production" : "development",
   },
 
   changeHandler(err, stats) {
     log(
       "[webpack]",
       stats.toString({
-        colors: true
+        colors: true,
       })
     );
   },
 
   build() {
-    return gulp
-      .src(PATHS.entries)
-      .pipe(named())
-      .pipe(webpackStream(webpack.config))
-      .pipe(
+    return (
+      gulp
+        .src(PATHS.entries)
+        .pipe(named())
+        .pipe(webpackStream(webpack.config))
+        /*.pipe(
         $.if(
           PRODUCTION,
           $.uglify().on("error", e => {
             console.log(e);
           })
         )
-      )
-      .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev()))
-      .pipe(gulp.dest(PATHS.dist + "/js"))
-      .pipe(
-        $.if(
-          (REVISIONING && PRODUCTION) || (REVISIONING && DEV),
-          $.rev.manifest()
-        )
-      )
-      .pipe(gulp.dest(PATHS.dist + "/js"));
+      )*/
+        .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev()))
+        .pipe(gulp.dest(PATHS.dist + "/js"))
+        .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev.manifest()))
+        .pipe(gulp.dest(PATHS.dist + "/js"))
+    );
   },
 
   watch() {
     const watchConfig = Object.assign(webpack.config, {
       watch: true,
-      devtool: "inline-source-map"
+      devtool: "inline-source-map",
     });
 
     return gulp
       .src(PATHS.entries)
       .pipe(named())
       .pipe(
-        webpackStream(watchConfig, webpack2, webpack.changeHandler).on(
-          "error",
-          err => {
-            log(
-              "[webpack:error]",
-              err.toString({
-                colors: true
-              })
-            );
-          }
-        )
+        webpackStream(watchConfig, webpack2, webpack.changeHandler).on("error", err => {
+          log(
+            "[webpack:error]",
+            err.toString({
+              colors: true,
+            })
+          );
+        })
       )
       .pipe(gulp.dest(PATHS.dist + "/js"));
-  }
+  },
 };
 
 function externaljs() {
-  return gulp
-    .src(PATHS.externaljs)
-    .pipe($.if(!PRODUCTION, $.sourcemaps.init()))
-    .pipe($.uglify())
-    .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
-    .pipe(gulp.dest(PATHS.dist + "/js"));
+  return (
+    gulp
+      .src(PATHS.externaljs)
+      .pipe($.if(!PRODUCTION, $.sourcemaps.init()))
+      //.pipe($.uglify())
+      .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
+      .pipe(gulp.dest(PATHS.dist + "/js"))
+  );
 }
 
 function externalcss() {
@@ -212,12 +203,8 @@ function watch() {
   gulp.watch("src/html/**/*", html.local);
   gulp
     .watch("src/scss/**/*.scss", sass)
-    .on("change", path =>
-      log("File " + colors.bold(colors.magenta(path)) + " changed.")
-    )
-    .on("unlink", path =>
-      log("File " + colors.bold(colors.magenta(path)) + " was removed.")
-    );
+    .on("change", path => log("File " + colors.bold(colors.magenta(path)) + " changed."))
+    .on("unlink", path => log("File " + colors.bold(colors.magenta(path)) + " was removed."));
 }
 
 function getJatosStudyDescription() {
@@ -239,8 +226,8 @@ function getJatosStudyDescription() {
           reloadable: true,
           active: true,
           comments: "",
-          jsonData: ""
-        }
+          jsonData: "",
+        },
       ],
       batchList: [
         {
@@ -252,10 +239,10 @@ function getJatosStudyDescription() {
           maxTotalWorkers: null,
           allowedWorkerTypes: null,
           comments: null,
-          jsonData: ""
-        }
-      ]
-    }
+          jsonData: "",
+        },
+      ],
+    },
   };
   return study;
 }
@@ -304,7 +291,4 @@ exports.package = gulp.series(
 );
 
 // Default task: Build and watch for changes
-exports.default = gulp.series(
-  exports.build,
-  gulp.parallel(watch, webpack.watch)
-);
+exports.default = gulp.series(exports.build, gulp.parallel(watch, webpack.watch));

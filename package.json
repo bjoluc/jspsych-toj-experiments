@@ -12,11 +12,14 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
-    "jspsych": "^6.0.0"
+    "delay": "4.3.0",
+    "jspsych": "^6.0.0",
+    "random-int": "2.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.0",
     "@babel/core": "^7.5.4",
+    "@babel/plugin-proposal-class-properties": "7.5.5",
     "@babel/preset-env": "^7.5.4",
     "@babel/register": "^7.4.4",
     "ansi-colors": "^4.1.1",
@@ -51,10 +54,6 @@
     "webpack": "^4.35.3",
     "webpack-stream": "^5.2.1",
     "yargs": "^13.2.4"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@git.uni-paderborn.de:bjoluc/webtoj.git"
   },
   "browserslist": [
     "last 2 versions",
