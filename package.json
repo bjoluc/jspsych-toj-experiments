@@ -13,6 +13,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
     "delay": "4.3.0",
+    "eslint": "^6.3.0",
     "jspsych": "^6.0.0",
     "random-int": "2.0.0"
   },
