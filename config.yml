@@ -1,4 +1,4 @@
-METAFILE: quicktoj.yml
+METAFILE: empty.yml
 
 # Set to true if you want static asset revisioning, helpful for cache busting
 REVISIONING: false

@@ -1,4 +1,4 @@
-import { createTimeline, getPreloadImagePaths } from "./experiments/quick-toj";
+import { createTimeline, getPreloadImagePaths } from "./experiments/empty";
 
 if (typeof jatos != "undefined") {
   // Experiment is served by JATOS
