@@ -15,7 +15,7 @@ if (typeof jatos != "undefined") {
 } else {
   // Experiment is run locally
   jsPsych.init({
-    timeline: createTimeline(null),
+    timeline: createTimeline(),
     preload_images: getPreloadImagePaths(),
     on_finish: function() {
       jsPsych.data.displayData();

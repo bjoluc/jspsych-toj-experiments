@@ -127,7 +127,7 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline(jatosStudyInput) {
+export function createTimeline(jatosStudyInput = null) {
   let timeline = [];
 
   const touchAdapterSpace = new TouchAdapter(

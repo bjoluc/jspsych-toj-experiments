@@ -2,7 +2,7 @@ import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-fullscreen";
 import "../custom-plugins/jspsych-temporal-order-judgement";
 
-export function createTimeline(jatosStudyInput) {
+export function createTimeline(jatosStudyInput = null) {
   let timeline = [];
 
   console.log(jatosStudyInput);
