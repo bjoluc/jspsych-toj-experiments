@@ -59,5 +59,11 @@ This project requires [Node.js](https://nodejs.org) 10.x.x to be installed on yo
    modified too. You should now have an `index.html` file within your `dist`
    folder. Open it with a browser and you will see your new jsPsych experiment in action!
 
-Once you have finished writing your experiment, you can run ```npm run package```.
-This will create a JATOS study zip file of your experiment within the `packaged` directory.
+4. If you are new to jsPsych, you might have a look at the jsPsych (demo
+   experiment
+   tutorial)[https://www.jspsych.org/tutorials/rt-task/#part-2-display-welcome-message].
+   You can skip part 1 there, as jspsych-boilerplate has you covered.
+
+Once you have finished writing your experiment, you can run ```npm run
+package```. This will create a JATOS study zip file of your experiment within
+the `packaged` directory.
