@@ -1,0 +1,5 @@
+title: "New Experiment"
+slug: # Optional, auto-generated if empty
+jatosDescription: "This discription text is displayed in JATOS"
+jatosJsonInput:
+  # Optional. JATOS studies can provide JSON input which can be defined here (in the yaml format).
