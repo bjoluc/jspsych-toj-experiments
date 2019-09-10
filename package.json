@@ -2,6 +2,10 @@
   "name": "webtoj",
   "version": "1.0.0",
   "description": "Browser-based TOJ experiments using jsPsych",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bjoluc/jspsych-boilerplate.git"
+  },
   "main": "gulpfile.babel.js",
   "scripts": {
     "start": "gulp --dev",
@@ -11,18 +15,18 @@
     "package": "gulp package --production"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.4.4",
+    "@babel/polyfill": "7.6.0",
     "delay": "4.3.0",
     "eslint": "^6.3.0",
     "jspsych": "^6.0.0",
     "random-int": "2.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.0",
-    "@babel/core": "^7.5.4",
+    "@babel/cli": "7.6.0",
+    "@babel/core": "7.6.0",
     "@babel/plugin-proposal-class-properties": "7.5.5",
-    "@babel/preset-env": "^7.5.4",
-    "@babel/register": "^7.4.4",
+    "@babel/preset-env": "7.6.0",
+    "@babel/register": "7.6.0",
     "ansi-colors": "^4.1.1",
     "babel-loader": "^8.0.6",
     "core-js": "^3.1.4",
@@ -32,7 +36,6 @@
     "gulp-autoprefixer": "^6.1.0",
     "gulp-babel": "^8.0.0",
     "gulp-clean-css": "^4.2.0",
-    "gulp-dest": "^0.2.3",
     "gulp-file": "^0.4.0",
     "gulp-html-replace": "^1.6.2",
     "gulp-if": "^2.0.2",
@@ -48,11 +51,11 @@
     "js-yaml": "^3.13.1",
     "node-sass": "^4.12.0",
     "regenerator-runtime": "^0.13.3",
-    "rimraf": "^2.6.3",
-    "slugify": "^1.3.4",
+    "rimraf": "2.7.1",
+    "slugify": "1.3.5",
     "uuid": "^3.3.2",
     "vinyl-named": "^1.1.0",
-    "webpack": "^4.35.3",
+    "webpack": "4.39.3",
     "webpack-stream": "^5.2.1",
     "yargs": "^13.2.4"
   },
