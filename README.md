@@ -54,14 +54,14 @@ This project requires [Node.js](https://nodejs.org) 10.x.x to be installed on yo
    4. In the first line of [src/js/app.js](src/js/app.js), modify the right
       handside of the import statement to import your experiment.
 
-3. Run ```npm start```. This will build your experiment and watch the source
+3. Run ```npm run start```. This will build your experiment and watch the source
    files for changes. Whenever you modify a source file, the build will be
    modified too. You should now have an `index.html` file within your `dist`
    folder. Open it with a browser and you will see your new jsPsych experiment in action!
 
-4. If you are new to jsPsych, you might have a look at the jsPsych (demo
+4. If you are new to jsPsych, you might have a look at the jsPsych [demo
    experiment
-   tutorial)[https://www.jspsych.org/tutorials/rt-task/#part-2-display-welcome-message].
+   tutorial](https://www.jspsych.org/tutorials/rt-task/#part-2-display-welcome-message).
    You can skip part 1 there, as jspsych-boilerplate has you covered.
 
 Once you have finished writing your experiment, you can run ```npm run
