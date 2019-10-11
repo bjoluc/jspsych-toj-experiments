@@ -2,7 +2,7 @@
  * A convenience class that allows binding to the touchstart event of DOM elements and simulates a
  * specific key stroke on every touch.
  */
-export default class TouchAdapter {
+export class TouchAdapter {
   static bindEvent = "touchstart";
 
   /**

@@ -4,7 +4,8 @@ import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
 import tojPlugin from "../plugins/jspsych-temporal-order-judgement";
 
-import TouchAdapter from "../TouchAdapter";
+import { TouchAdapter } from "../util/TouchAdapter";
+import { Scaler } from "../util/Scaler";
 import randomInt from "random-int";
 import Scaler from "../Scaler";
 import delay from "delay";

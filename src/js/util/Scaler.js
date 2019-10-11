@@ -2,7 +2,7 @@
  * A class that allows to scale an element (and its children) proportionally to fit the window's
  * size.
  */
-export default class Scaler {
+export class Scaler {
   /**
    * Initializes a new Scaler for a given DOM element.
    *
