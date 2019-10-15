@@ -20,14 +20,14 @@ export class TojPlugin {
       probe_element: {
         type: jsPsych.plugins.parameterType.OBJECT,
         pretty_name: "Probe element",
-        default: undefined,
+        default: null,
         description:
           "The DOM element acting as the probe stimulus. It is appended as a child to the plugin's container.",
       },
       reference_element: {
         type: jsPsych.plugins.parameterType.OBJECT,
         pretty_name: "Reference element",
-        default: undefined,
+        default: null,
         description:
           "The DOM element acting as the reference stimulus. It is appended as a child to the plugin's container.",
       },
@@ -86,6 +86,15 @@ export class TojPlugin {
   }
 
   /**
+   * Appends a child to the plugin's container element
+   *
+   * @param {Element} element
+   */
+  appendElement(element) {
+    this.container.appendChild(element);
+  }
+
+  /**
    * Shows a DOM element and optionally hides it again after a specified timeout.
    *
    * @param {Element} element The DOM element to be shown
@@ -138,9 +147,8 @@ export class TojPlugin {
     const probe = trial.probe_element;
     const reference = trial.reference_element;
 
-    this.container.innerHTML = trial.fixation_mark_html;
-    this.container.appendChild(probe);
-    this.container.appendChild(reference);
+    this.container.insertAdjacentHTML("beforeend", trial.fixation_mark_html);
+    // TODO append targets in quick-toj
 
     display_element.appendChild(this.container);
 
@@ -174,6 +182,7 @@ export class TojPlugin {
 
     // Clear the screen
     display_element.innerHTML = "";
+    this.resetContainer();
 
     // Process the response
     let responseKey = jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(keyboardResponse.key);
