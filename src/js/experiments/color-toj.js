@@ -1,0 +1,298 @@
+// jsPsych plugins
+import "jspsych/plugins/jspsych-html-keyboard-response";
+import "jspsych/plugins/jspsych-survey-text";
+import "jspsych/plugins/jspsych-fullscreen";
+import tojPlugin from "../plugins/jspsych-toj";
+
+import { TouchAdapter } from "../util/TouchAdapter";
+import { Scaler } from "../util/Scaler";
+import randomInt from "random-int";
+import delay from "delay";
+import { TojPlugin } from "../plugins/jspsych-toj";
+import { createBarStimulusGrid } from "../util/barStimuli";
+
+class ConditionGenerator {
+  static gridSize = 7;
+
+  _previousOrientations = {};
+  _previousPositions = {};
+
+  generateOrientation(identifier) {
+    let orientation;
+    do {
+      orientation = randomInt(0, 17) * 10;
+    } while (orientation == this._previousOrientations[identifier]);
+    this._previousOrientations[identifier] = orientation;
+    return orientation;
+  }
+
+  mirrorOrientation(orientation) {
+    return (orientation + 90) % 180;
+  }
+
+  static _generateRandomPos(xRange, yRange) {
+    return [randomInt(...xRange), randomInt(...yRange)];
+  }
+
+  generatePosition(identifier, xRange = [2, 5], yRange = [2, 5]) {
+    let pos;
+    do {
+      pos = ConditionGenerator._generateRandomPos(xRange, yRange);
+    } while (pos == this._previousPositions[identifier]);
+    this._previousPositions[identifier] = pos;
+    return pos;
+  }
+
+  generateCondition(probeLeft, salient) {
+    let cond = {};
+    const rotationLeft = this.generateOrientation("left");
+    const rotationRight = this.mirrorOrientation(rotationLeft);
+    if (probeLeft) {
+      cond.rotationProbe = salient ? rotationRight : rotationLeft;
+      cond.rotationReference = rotationRight;
+    } else {
+      cond.rotationProbe = salient ? rotationLeft : rotationRight;
+      cond.rotationReference = rotationLeft;
+    }
+
+    cond.posLeft = this.generatePosition("left", [3, 5]);
+    cond.posRight = this.generatePosition("right", [2, 4]);
+
+    if (probeLeft) {
+      cond.posProbe = cond.posLeft;
+      cond.posRef = cond.posRight;
+    } else {
+      cond.posProbe = cond.posRight;
+      cond.posRef = cond.posLeft;
+    }
+
+    cond.fixationTime = randomInt(30, 75) * 10;
+    return cond;
+  }
+}
+
+const conditionGenerator = new ConditionGenerator();
+
+const leftKey = "q",
+  rightKey = "p";
+
+export function createTimeline(jatosStudyInput = null) {
+  let timeline = [];
+
+  const touchAdapterSpace = new TouchAdapter(
+    jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
+  );
+  const bindSpaceTouchAdapterToWindow = async () => {
+    await delay(500); // Prevent touch event from previous touch
+    touchAdapterSpace.bindToElement(window);
+  };
+  const unbindSpaceTouchAdapterFromWindow = () => {
+    touchAdapterSpace.unbindFromElement(window);
+  };
+
+  // Welcome screen
+  timeline.push({
+    type: "html-keyboard-response",
+    stimulus:
+      "<p><img src='images/quick-toj/logo.png' style='max-width: 100vh;'></img><p/>" +
+      "<p>Thank you for taking the time to participate in QuickTOJ Web!<p/>" +
+      "<p>Press any key to begin.</p>",
+    on_load: bindSpaceTouchAdapterToWindow,
+    on_finish: unbindSpaceTouchAdapterFromWindow,
+  });
+
+  timeline.push({
+    type: "survey-text",
+    questions: [{ prompt: "Please enter your subject number." }],
+    data: {
+      userAgent: navigator.userAgent,
+    },
+  });
+
+  // Switch to fullscreen
+  timeline.push({
+    type: "fullscreen",
+    fullscreen_mode: true,
+  });
+
+  // Instructions
+  timeline.push({
+    type: "html-keyboard-response",
+    stimulus:
+      "<p>Sie sehen gleich ein Muster aus grauen Strichen.<br/>" +
+      "Zwei sind etwas dunkler grau und werden kurz blinken.<br/>" +
+      "Bitte beurteilen Sie, welcher zuerst geblinkt hat.</p>" +
+      "<p>War es der linke, drücken Sie die Taste <b>Q</b>.<br/>" +
+      "Falls der rechte zuerst geblinkt hat, drücken Sie die Taste <b>P</b>.</p>" +
+      "<p>Versuchen Sie, genau zu sein und keine Fehler zu machen. " +
+      "Wenn Sie nicht wissen, wer zuerst war, raten Sie.</p>" +
+      "<p>Press any key to start the experiment.</p>",
+    on_load: bindSpaceTouchAdapterToWindow,
+    on_finish: unbindSpaceTouchAdapterFromWindow,
+  });
+
+  // Generate trials
+  const factors = {
+    probeLeft: [true, false],
+    salient: [true, false],
+    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map(x => x * 10),
+  };
+  const repetitions = 1;
+  let trials = jsPsych.randomization.factorial(factors, repetitions);
+
+  const touchAdapterLeft = new TouchAdapter(
+    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(leftKey)
+  );
+  const touchAdapterRight = new TouchAdapter(
+    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(rightKey)
+  );
+
+  let scaler; // Will store the Scaler object for the TOJ plugin
+
+  // Create TOJ plugin trial object
+  const toj = {
+    type: "toj",
+    modification_function: element => TojPlugin.flashElement(element, "toj-flash", 30),
+    soa: jsPsych.timelineVariable("soa"),
+    probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
+    reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
+    on_start: trial => {
+      const probeLeft = jsPsych.timelineVariable("probeLeft", true);
+      const salient = jsPsych.timelineVariable("salient", true);
+
+      const cond = conditionGenerator.generateCondition(probeLeft, salient);
+
+      // Log probeLeft, salient and condition
+      trial.data = {
+        probeLeft,
+        salient,
+        condition: cond,
+      };
+
+      trial.fixation_time = cond.fixationTime;
+
+      const gridSize = [ConditionGenerator.gridSize, ConditionGenerator.gridSize];
+      const targetScaleFactor = 1;
+      const distractorScaleFactor = 0.7;
+      const distractorScaleFactorSD = 0.1;
+
+      const [probeGrid, probeTarget] = createBarStimulusGrid(
+        gridSize,
+        cond.posProbe,
+        "red",
+        "green",
+        targetScaleFactor,
+        distractorScaleFactor,
+        distractorScaleFactorSD,
+        cond.rotationProbe
+      );
+      const [referenceGrid, referenceTarget] = createBarStimulusGrid(
+        gridSize,
+        cond.posRef,
+        "red",
+        "green",
+        targetScaleFactor,
+        distractorScaleFactor,
+        distractorScaleFactorSD,
+        cond.rotationReference
+      );
+
+      trial.probe_element = probeTarget;
+      trial.reference_element = referenceTarget;
+
+      touchAdapterLeft.bindToElement(probeLeft ? probeGrid : referenceGrid);
+      touchAdapterRight.bindToElement(probeLeft ? referenceGrid : probeGrid);
+
+      if (probeLeft) {
+        tojPlugin.appendElement(probeGrid);
+        tojPlugin.appendElement(referenceGrid);
+      } else {
+        tojPlugin.appendElement(referenceGrid);
+        tojPlugin.appendElement(probeGrid);
+      }
+    },
+    on_load: () => {
+      // Fit to window size
+      scaler = new Scaler(
+        document.getElementById("jspsych-toj-container"),
+        ConditionGenerator.gridSize * 40 * 2,
+        ConditionGenerator.gridSize * 40,
+        10
+      );
+    },
+    on_finish: () => {
+      scaler.destruct();
+      touchAdapterLeft.unbindFromAll();
+      touchAdapterRight.unbindFromAll();
+    },
+  };
+
+  // Create TOJ timelines
+  const tutorialTojTimeline = {
+    timeline: [toj],
+    timeline_variables: trials.slice(0, 10),
+    randomize_order: true,
+  };
+
+  const experimentTojTimeline = {
+    timeline: [toj],
+    timeline_variables: trials,
+    randomize_order: true,
+  };
+
+  // Generator function to create timeline variables for blocks
+  const blockGenerator = function*(blockCount) {
+    let currentBlock = 1;
+    while (currentBlock <= blockCount) {
+      yield { block: currentBlock, blockCount };
+      currentBlock += 1;
+    }
+  };
+
+  const tutorialFinishedScreen = {
+    type: "html-keyboard-response",
+    stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
+    on_load: bindSpaceTouchAdapterToWindow,
+    on_finish: unbindSpaceTouchAdapterFromWindow,
+  };
+
+  const blockFinishedScreen = {
+    type: "html-keyboard-response",
+    stimulus: () => {
+      const block = jsPsych.timelineVariable("block", true);
+      const blockCount = jsPsych.timelineVariable("blockCount", true);
+      if (block < blockCount) {
+        return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
+      } else {
+        return "<p>This part of the experiment is finished. Press any key to save the results!</p>";
+      }
+    },
+    on_load: bindSpaceTouchAdapterToWindow,
+    on_finish: unbindSpaceTouchAdapterFromWindow,
+  };
+
+  // Add tutorial to main timeline
+  timeline.push(tutorialTojTimeline, tutorialFinishedScreen);
+
+  // Add experiment blocks to main timeline
+  // timeline.push({
+  //   timeline: [experimentTojTimeline, blockFinishedScreen],
+  //   timeline_variables: Array.from(blockGenerator(5)),
+  // });
+
+  return timeline;
+}
+
+function* pathGenerator(prefix, fromNumber, toNumber, suffix) {
+  for (let i = fromNumber; i <= toNumber; i++) {
+    yield prefix + i + suffix;
+  }
+}
+
+export function getPreloadImagePaths() {
+  const root = "images/quick-toj/";
+  let paths = [root + "logo.png"];
+  paths = paths.concat(Array.from(pathGenerator(root + "background_", 0, 17, ".png")));
+  paths = paths.concat(Array.from(pathGenerator(root + "target_", 0, 17, ".png")));
+  return paths;
+}

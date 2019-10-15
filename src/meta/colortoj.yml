@@ -1,0 +1,5 @@
+title: "Color TOJ"
+slug: # Optional, auto-generated if empty
+jatosDescription: "A TOJ experiment to measure color salience"
+jatosJsonInput:
+  # Optional. JATOS studies can provide JSON input which can be defined here (in the yaml format).
