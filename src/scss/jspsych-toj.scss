@@ -1,4 +1,7 @@
 #jspsych-toj-container {
+  display: flex;
+  flex-direction: row;
+
   .absolute-position {
     position: absolute;
     left: 50%;

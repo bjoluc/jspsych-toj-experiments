@@ -1,0 +1,15 @@
+.bar-stimulus {
+  width: 40px;
+  height: 40px;
+  position: relative;
+
+  .bar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 25%;
+    border-radius: 1000px;
+  }
+}
