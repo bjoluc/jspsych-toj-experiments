@@ -2,12 +2,12 @@
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
-import tojPlugin from "../plugins/jspsych-temporal-order-judgement";
+import tojPlugin from "../plugins/jspsych-toj-image";
+import { TojPlugin } from "../plugins/jspsych-toj";
 
 import { TouchAdapter } from "../util/TouchAdapter";
 import { Scaler } from "../util/Scaler";
 import randomInt from "random-int";
-import Scaler from "../Scaler";
 import delay from "delay";
 
 class ConditionGenerator {
@@ -194,15 +194,7 @@ export function createTimeline(jatosStudyInput = null) {
 
   trials.forEach((trial, index, trials) => {
     const condition = conditionGenerator.generateCondition(trial.probeLeft, trial.salient);
-    trials[index] = {
-      ...trial,
-      ...condition,
-      allVariables: {
-        // Cheaty workaround to access all timeline variables via timelineVariable() and log them
-        ...trial,
-        ...condition,
-      },
-    };
+    trials[index] = Object.assign({}, trial, condition);
   });
 
   const touchAdapterLeft = new TouchAdapter(
@@ -212,12 +204,13 @@ export function createTimeline(jatosStudyInput = null) {
     jsPsych.pluginAPI.convertKeyCharacterToKeyCode(rightKey)
   );
 
-  let scaler; // Will store the a Scaler object for the TOJ plugin
+  let scaler; // Will store the Scaler object for the TOJ plugin
 
   // Create TOJ plugin trial object
   const toj = {
-    type: "temporal-order-judgement",
-    is_flash_toj: true,
+    type: "toj-image",
+    modification_function: element => TojPlugin.flashElement(element, "toj-flash", 30),
+    hide_stimuli: false,
     probe_image: jsPsych.timelineVariable("probeImage"),
     reference_image: jsPsych.timelineVariable("refImage"),
     fixation_time: jsPsych.timelineVariable("preDelay"),
@@ -245,7 +238,7 @@ export function createTimeline(jatosStudyInput = null) {
       );
       // Fit to window size
       scaler = new Scaler(
-        document.getElementById("jspsych-temporal-order-judgement-container"),
+        document.getElementById("jspsych-toj-container"),
         ConditionGenerator.fieldWidth * 2,
         ConditionGenerator.fieldWidth,
         10
@@ -253,10 +246,9 @@ export function createTimeline(jatosStudyInput = null) {
     },
     on_finish: () => {
       scaler.destruct();
-      touchAdapterRight.unbindFromAll();
+      touchAdapterLeft.unbindFromAll();
       touchAdapterRight.unbindFromAll();
     },
-    data: jsPsych.timelineVariable("allVariables"),
   };
 
   // Create TOJ timelines

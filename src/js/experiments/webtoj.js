@@ -1,6 +1,6 @@
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-fullscreen";
-import "../custom-plugins/jspsych-temporal-order-judgement";
+import "../plugins/jspsych-toj-image";
 
 export function createTimeline(jatosStudyInput = null) {
   let timeline = [];
@@ -37,9 +37,9 @@ export function createTimeline(jatosStudyInput = null) {
   let repetitions = 2;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
 
-  // Create TOJ object
+  // Create toj-image trial object
   let toj = {
-    type: "temporal-order-judgement",
+    type: "toj-image",
     probe_image: jsPsych.timelineVariable("probe_image"),
     reference_image: jsPsych.timelineVariable("reference_image"),
     soa: jsPsych.timelineVariable("soa"),

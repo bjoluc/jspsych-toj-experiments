@@ -12,36 +12,36 @@ export class Scaler {
    * @param {number} margin The space to leave from the border of each side of the screen (in pixels)
    */
   constructor(element, initialWidth, initialHeight, margin) {
-    this.element = element;
-    this.dimensions = { width: initialWidth, height: initialHeight };
-    this.margin = margin;
-    this.resizeToWindowSize();
-    this.addEventListeners();
-  }
-
-  addEventListeners() {
-    window.addEventListener("orientationchange", this.resizeToWindowSize);
-    window.addEventListener("resize", this.resizeToWindowSize);
-  }
-
-  removeEventListeners() {
-    window.removeEventListener("orientationchange", this.resizeToWindowSize);
-    window.removeEventListener("resize", this.resizeToWindowSize);
+    this._element = element;
+    this._dimensions = { width: initialWidth, height: initialHeight };
+    this._margin = margin;
+    this._resizeToWindowSize();
+    this._addEventListeners();
   }
 
   /**
    * Removes the event listeners. Call this if you do not use a scaler instance anymore.
    */
   destruct() {
-    this.removeEventListeners();
+    this._removeEventListeners();
   }
 
-  resize(width, height) {
-    const scale = Math.min(width / this.dimensions.width, height / this.dimensions.height);
-    this.element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  _addEventListeners() {
+    window.addEventListener("orientationchange", this._resizeToWindowSize);
+    window.addEventListener("resize", this._resizeToWindowSize);
   }
 
-  resizeToWindowSize = (() => {
-    this.resize(window.innerWidth - this.margin, window.innerHeight - this.margin);
+  _removeEventListeners() {
+    window.removeEventListener("orientationchange", this._resizeToWindowSize);
+    window.removeEventListener("resize", this._resizeToWindowSize);
+  }
+
+  _resize(width, height) {
+    const scale = Math.min(width / this._dimensions.width, height / this._dimensions.height);
+    this._element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+
+  _resizeToWindowSize = (() => {
+    this._resize(window.innerWidth - this._margin, window.innerHeight - this._margin);
   }).bind(this);
 }

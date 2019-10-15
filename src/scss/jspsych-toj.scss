@@ -1,0 +1,23 @@
+#jspsych-toj-container {
+  .absolute-position {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none; // disable text/image selection
+  }
+
+  .toj-fixation-mark {
+    width: 10px;
+  }
+
+  .toj-fixation-mark,
+  .toj-probe,
+  .toj-reference {
+    z-index: 1;
+  }
+
+  .toj-flash {
+    filter: contrast(0%) brightness(1.5);
+  }
+}
