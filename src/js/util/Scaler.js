@@ -38,7 +38,7 @@ export class Scaler {
 
   _resize(width, height) {
     const scale = Math.min(width / this._dimensions.width, height / this._dimensions.height);
-    this._element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    this._element.style.transform = `scale(${scale})`;
   }
 
   _resizeToWindowSize = (() => {
