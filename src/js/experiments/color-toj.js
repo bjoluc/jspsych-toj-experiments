@@ -101,8 +101,8 @@ export function createTimeline(jatosStudyInput = null) {
   const touchAdapterSpace = new TouchAdapter(
     jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
   );
-  const bindSpaceTouchAdapterToWindow = async () => {
-    await delay(500); // Prevent touch event from previous touch
+  const bindSpaceTouchAdapterToWindow = () => {
+    //await delay(500); // Prevent touch event from previous touch
     touchAdapterSpace.bindToElement(window);
   };
   const unbindSpaceTouchAdapterFromWindow = () => {
@@ -116,7 +116,7 @@ export function createTimeline(jatosStudyInput = null) {
       "<p><img src='images/quick-toj/logo.png' style='max-width: 100vh;'></img><p/>" +
       "<p>Thank you for taking the time to participate in QuickTOJ Web!<p/>" +
       "<p>Press any key to begin.</p>",
-    on_load: bindSpaceTouchAdapterToWindow,
+    on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   });
 
@@ -138,15 +138,15 @@ export function createTimeline(jatosStudyInput = null) {
   timeline.push({
     type: "html-keyboard-response",
     stimulus:
-      "<p>Sie sehen gleich ein Muster aus grauen Strichen.<br/>" +
-      "Zwei sind etwas dunkler grau und werden kurz blinken.<br/>" +
+      "<p>Sie sehen gleich ein Muster aus farbigen Strichen.<br/>" +
+      "Zwei sind etwas größer als die anderen und werden kurz blinken.<br/>" +
       "Bitte beurteilen Sie, welcher zuerst geblinkt hat.</p>" +
       "<p>War es der linke, drücken Sie die Taste <b>Q</b>.<br/>" +
       "Falls der rechte zuerst geblinkt hat, drücken Sie die Taste <b>P</b>.</p>" +
       "<p>Versuchen Sie, genau zu sein und keine Fehler zu machen. " +
       "Wenn Sie nicht wissen, wer zuerst war, raten Sie.</p>" +
       "<p>Press any key to start the experiment.</p>",
-    on_load: bindSpaceTouchAdapterToWindow,
+    on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   });
 
@@ -271,7 +271,7 @@ export function createTimeline(jatosStudyInput = null) {
   const tutorialFinishedScreen = {
     type: "html-keyboard-response",
     stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
-    on_load: bindSpaceTouchAdapterToWindow,
+    on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   };
 
@@ -286,7 +286,7 @@ export function createTimeline(jatosStudyInput = null) {
         return "<p>This part of the experiment is finished. Press any key to save the results!</p>";
       }
     },
-    on_load: bindSpaceTouchAdapterToWindow,
+    on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   };
 
@@ -294,10 +294,10 @@ export function createTimeline(jatosStudyInput = null) {
   timeline.push(tutorialTojTimeline, tutorialFinishedScreen);
 
   // Add experiment blocks to main timeline
-  // timeline.push({
-  //   timeline: [experimentTojTimeline, blockFinishedScreen],
-  //   timeline_variables: Array.from(blockGenerator(5)),
-  // });
+  timeline.push({
+    timeline: [experimentTojTimeline, blockFinishedScreen],
+    timeline_variables: Array.from(blockGenerator(5)),
+  });
 
   return timeline;
 }
