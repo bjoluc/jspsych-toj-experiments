@@ -3,6 +3,8 @@ import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
 import tojPlugin from "../plugins/jspsych-toj";
+import shuffle from "lodash/shuffle";
+import { lab } from "d3-color";
 
 import { TouchAdapter } from "../util/TouchAdapter";
 import { Scaler } from "../util/Scaler";
@@ -17,12 +19,14 @@ class ConditionGenerator {
   _previousOrientations = {};
   _previousPositions = {};
 
-  generateOrientation(identifier) {
+  generateOrientation(identifier = null) {
     let orientation;
     do {
       orientation = randomInt(0, 17) * 10;
-    } while (orientation == this._previousOrientations[identifier]);
-    this._previousOrientations[identifier] = orientation;
+    } while (identifier && orientation == this._previousOrientations[identifier]);
+    if (identifier) {
+      this._previousOrientations[identifier] = orientation;
+    }
     return orientation;
   }
 
@@ -44,26 +48,41 @@ class ConditionGenerator {
   }
 
   generateCondition(probeLeft, salient) {
-    let cond = {};
-    const rotationLeft = this.generateOrientation("left");
-    const rotationRight = this.mirrorOrientation(rotationLeft);
+    const cond = {};
+
+    // L = 50, a ∈ {50,-50}, b = 0
+    const L = 50;
+    const a = [50, -50];
+    const b = 0;
+
+    const colors = a.map(a =>
+      lab(L, a, b)
+        .rgb()
+        .toString()
+    );
+
+    const [colorLeft, colorRight] = shuffle(colors);
     if (probeLeft) {
-      cond.rotationProbe = salient ? rotationRight : rotationLeft;
-      cond.rotationReference = rotationRight;
+      cond.colorProbe = salient ? colorRight : colorLeft;
+      cond.colorProbeGrid = colorLeft;
+      cond.colorReference = colorRight;
     } else {
-      cond.rotationProbe = salient ? rotationLeft : rotationRight;
-      cond.rotationReference = rotationLeft;
+      cond.colorProbe = salient ? colorLeft : colorRight;
+      cond.colorProbeGrid = colorRight;
+      cond.colorReference = colorLeft;
     }
 
-    cond.posLeft = this.generatePosition("left", [3, 5]);
-    cond.posRight = this.generatePosition("right", [2, 4]);
+    cond.rotationProbe = this.generateOrientation();
+    cond.rotationReference = this.mirrorOrientation(cond.rotationProbe);
 
+    const posLeft = this.generatePosition("left", [3, 5]);
+    const posRight = this.generatePosition("right", [2, 4]);
     if (probeLeft) {
-      cond.posProbe = cond.posLeft;
-      cond.posRef = cond.posRight;
+      cond.posProbe = posLeft;
+      cond.posRef = posRight;
     } else {
-      cond.posProbe = cond.posRight;
-      cond.posRef = cond.posLeft;
+      cond.posProbe = posRight;
+      cond.posRef = posLeft;
     }
 
     cond.fixationTime = randomInt(30, 75) * 10;
@@ -179,8 +198,8 @@ export function createTimeline(jatosStudyInput = null) {
       const [probeGrid, probeTarget] = createBarStimulusGrid(
         gridSize,
         cond.posProbe,
-        "red",
-        "green",
+        cond.colorProbe,
+        cond.colorProbeGrid,
         targetScaleFactor,
         distractorScaleFactor,
         distractorScaleFactorSD,
@@ -189,8 +208,8 @@ export function createTimeline(jatosStudyInput = null) {
       const [referenceGrid, referenceTarget] = createBarStimulusGrid(
         gridSize,
         cond.posRef,
-        "red",
-        "green",
+        cond.colorReference,
+        cond.colorReference,
         targetScaleFactor,
         distractorScaleFactor,
         distractorScaleFactorSD,
