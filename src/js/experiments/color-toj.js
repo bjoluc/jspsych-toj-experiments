@@ -2,22 +2,39 @@
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
+import { TojPlugin } from "../plugins/jspsych-toj";
 import tojPlugin from "../plugins/jspsych-toj";
+
+import delay from "delay";
 import shuffle from "lodash/shuffle";
 import { lab } from "d3-color";
+import randomInt from "random-int";
 
 import { TouchAdapter } from "../util/TouchAdapter";
 import { Scaler } from "../util/Scaler";
-import randomInt from "random-int";
-import delay from "delay";
-import { TojPlugin } from "../plugins/jspsych-toj";
 import { createBarStimulusGrid } from "../util/barStimuli";
+import { setAbsolutePosition } from "../util/positioning";
 
 class ConditionGenerator {
   static gridSize = 7;
 
   _previousOrientations = {};
   _previousPositions = {};
+  _colors = undefined;
+
+  constructor() {
+    // Generate colors
+    // L = 50, a ∈ {50,-50}, b = 0
+    const L = 50;
+    const a = [50, -50];
+    const b = 0;
+
+    this._colors = a.map(a =>
+      lab(L, a, b)
+        .rgb()
+        .toString()
+    );
+  }
 
   generateOrientation(identifier = null) {
     let orientation;
@@ -50,18 +67,7 @@ class ConditionGenerator {
   generateCondition(probeLeft, salient) {
     const cond = {};
 
-    // L = 50, a ∈ {50,-50}, b = 0
-    const L = 50;
-    const a = [50, -50];
-    const b = 0;
-
-    const colors = a.map(a =>
-      lab(L, a, b)
-        .rgb()
-        .toString()
-    );
-
-    const [colorLeft, colorRight] = shuffle(colors);
+    const [colorLeft, colorRight] = shuffle(this._colors);
     if (probeLeft) {
       cond.colorProbe = salient ? colorRight : colorLeft;
       cond.colorProbeGrid = colorLeft;
@@ -101,24 +107,13 @@ export function createTimeline(jatosStudyInput = null) {
   const touchAdapterSpace = new TouchAdapter(
     jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
   );
-  const bindSpaceTouchAdapterToWindow = () => {
-    //await delay(500); // Prevent touch event from previous touch
+  const bindSpaceTouchAdapterToWindow = async () => {
+    await delay(500); // Prevent touch event from previous touch
     touchAdapterSpace.bindToElement(window);
   };
   const unbindSpaceTouchAdapterFromWindow = () => {
     touchAdapterSpace.unbindFromElement(window);
   };
-
-  // Welcome screen
-  timeline.push({
-    type: "html-keyboard-response",
-    stimulus:
-      "<p><img src='images/quick-toj/logo.png' style='max-width: 100vh;'></img><p/>" +
-      "<p>Thank you for taking the time to participate in QuickTOJ Web!<p/>" +
-      "<p>Press any key to begin.</p>",
-    on_start: bindSpaceTouchAdapterToWindow,
-    on_finish: unbindSpaceTouchAdapterFromWindow,
-  });
 
   timeline.push({
     type: "survey-text",
@@ -222,13 +217,10 @@ export function createTimeline(jatosStudyInput = null) {
       touchAdapterLeft.bindToElement(probeLeft ? probeGrid : referenceGrid);
       touchAdapterRight.bindToElement(probeLeft ? referenceGrid : probeGrid);
 
-      if (probeLeft) {
-        tojPlugin.appendElement(probeGrid);
-        tojPlugin.appendElement(referenceGrid);
-      } else {
-        tojPlugin.appendElement(referenceGrid);
-        tojPlugin.appendElement(probeGrid);
-      }
+      tojPlugin.appendElement(probeGrid);
+      tojPlugin.appendElement(referenceGrid);
+      setAbsolutePosition(probeGrid, (probeLeft ? -1 : 1) * 140);
+      setAbsolutePosition(referenceGrid, (probeLeft ? 1 : -1) * 140);
     },
     on_load: () => {
       // Fit to window size

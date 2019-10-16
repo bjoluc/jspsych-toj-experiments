@@ -1,13 +1,13 @@
 #jspsych-toj-container {
   display: flex;
   flex-direction: row;
+  user-select: none; // disable text/image selection
 
   .absolute-position {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    user-select: none; // disable text/image selection
   }
 
   .toj-fixation-mark {
