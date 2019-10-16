@@ -1,5 +1,5 @@
-title: "QuickTOJ"
+title: "Quick TOJ"
 slug: # Auto-generated if left empty
-jatosDescription: "A quick, browser-based TOJ experiment"
+jatosDescription: "A quick, browser-based TOJ experiment with orientation"
 jatosJsonInput:
   # Data to be used as jatos JSON input. The yaml format has to be used here.
