@@ -302,16 +302,6 @@ export function createTimeline(jatosStudyInput = null) {
   return timeline;
 }
 
-function* pathGenerator(prefix, fromNumber, toNumber, suffix) {
-  for (let i = fromNumber; i <= toNumber; i++) {
-    yield prefix + i + suffix;
-  }
-}
-
 export function getPreloadImagePaths() {
-  const root = "images/quick-toj/";
-  let paths = [root + "logo.png"];
-  paths = paths.concat(Array.from(pathGenerator(root + "background_", 0, 17, ".png")));
-  paths = paths.concat(Array.from(pathGenerator(root + "target_", 0, 17, ".png")));
-  return paths;
+  return [];
 }
