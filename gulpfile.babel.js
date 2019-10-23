@@ -21,7 +21,7 @@ const $ = plugins();
 // Check for --production flag
 const PRODUCTION = !!yargs.argv.production;
 
-// Check for --development flag (unminified with sourcemaps)
+// Check for --development flag
 const DEV = !!yargs.argv.dev;
 
 // Function to load a YAML config file
@@ -33,6 +33,7 @@ function loadYmlFile(filename) {
 
 // Load settings from settings.yml
 const { METAFILE, REVISIONING, PATHS } = loadYmlFile("config.yml");
+const REV = REVISIONING && (PRODUCTION || DEV);
 
 const META = loadYmlFile("src/meta/" + METAFILE);
 
@@ -105,9 +106,9 @@ function sass() {
     .pipe($.autoprefixer())
     .pipe($.if(PRODUCTION, $.cleanCss({ compatibility: "ie9" })))
     .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
-    .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev()))
+    .pipe($.if(REV, $.rev()))
     .pipe(gulp.dest(PATHS.dist + "/css"))
-    .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev.manifest()))
+    .pipe($.if(REV, $.rev.manifest()))
     .pipe(gulp.dest(PATHS.dist + "/css"));
 }
 
@@ -125,6 +126,7 @@ const webpack = {
       ],
     },
     mode: PRODUCTION ? "production" : "development",
+    optimization: PRODUCTION ? { minimize: true } : {},
   },
 
   changeHandler(err, stats) {
@@ -137,24 +139,14 @@ const webpack = {
   },
 
   build() {
-    return (
-      gulp
-        .src(PATHS.entries)
-        .pipe(named())
-        .pipe(webpackStream(webpack.config))
-        /*.pipe(
-        $.if(
-          PRODUCTION,
-          $.uglify().on("error", e => {
-            console.log(e);
-          })
-        )
-      )*/
-        .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev()))
-        .pipe(gulp.dest(PATHS.dist + "/js"))
-        .pipe($.if((REVISIONING && PRODUCTION) || (REVISIONING && DEV), $.rev.manifest()))
-        .pipe(gulp.dest(PATHS.dist + "/js"))
-    );
+    return gulp
+      .src(PATHS.entries)
+      .pipe(named())
+      .pipe(webpackStream(webpack.config, webpack2))
+      .pipe($.if(REV, $.rev()))
+      .pipe(gulp.dest(PATHS.dist + "/js"))
+      .pipe($.if(REV, $.rev.manifest()))
+      .pipe(gulp.dest(PATHS.dist + "/js"));
   },
 
   watch() {
@@ -181,14 +173,12 @@ const webpack = {
 };
 
 function externaljs() {
-  return (
-    gulp
-      .src(PATHS.externaljs)
-      .pipe($.if(!PRODUCTION, $.sourcemaps.init()))
-      //.pipe($.uglify())
-      .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
-      .pipe(gulp.dest(PATHS.dist + "/js"))
-  );
+  return gulp
+    .src(PATHS.externaljs)
+    .pipe($.if(!PRODUCTION, $.sourcemaps.init()))
+    .pipe($.uglify())
+    .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
+    .pipe(gulp.dest(PATHS.dist + "/js"));
 }
 
 function externalcss() {
