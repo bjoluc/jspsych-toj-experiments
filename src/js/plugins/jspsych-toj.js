@@ -154,18 +154,24 @@ export class TojPlugin {
 
     await delay(trial.fixation_time);
 
+    let measuredSoa;
+
     const modificationFunction = trial.modification_function;
     // Modify stimulus elements according to SOA
     if (trial.soa < 0) {
       modificationFunction(probe);
+      const probeModifiedTime = performance.now();
       await delay(-trial.soa);
       modificationFunction(reference);
+      measuredSoa = probeModifiedTime - performance.now();
     } else {
       modificationFunction(reference);
+      const referenceModifiedTime = performance.now();
       if (trial.soa != 0) {
         await delay(trial.soa);
       }
       modificationFunction(probe);
+      measuredSoa = performance.now() - referenceModifiedTime;
     }
 
     let keyboardResponse = {
@@ -203,6 +209,7 @@ export class TojPlugin {
       response_key: responseKey,
       response: response,
       response_correct: correct,
+      measured_soa: measuredSoa,
       rt: keyboardResponse.rt,
     });
 
