@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "7.7.0",
-    "core-js": "3.3.6",
+    "core-js": "3.4.4",
     "d3-color": "^1.4.0",
     "delay": "4.3.0",
     "jspsych": "^6.0.0",
@@ -25,13 +25,13 @@
     "vsync-estimate": "^0.2.0"
   },
   "devDependencies": {
-    "@babel/cli": "7.7.0",
-    "@babel/core": "7.7.0",
-    "@babel/plugin-proposal-class-properties": "7.7.0",
-    "@babel/plugin-transform-classes": "7.7.0",
-    "@babel/preset-env": "7.7.1",
-    "@babel/register": "7.7.0",
-    "eslint": "6.6.0",
+    "@babel/cli": "7.7.4",
+    "@babel/core": "7.7.4",
+    "@babel/plugin-proposal-class-properties": "7.7.4",
+    "@babel/plugin-transform-classes": "7.7.4",
+    "@babel/preset-env": "7.7.4",
+    "@babel/register": "7.7.4",
+    "eslint": "6.7.1",
     "ansi-colors": "^4.1.1",
     "babel-loader": "^8.0.6",
     "dateformat": "^3.0.3",
@@ -61,7 +61,7 @@
     "vinyl-named": "^1.1.0",
     "webpack": "4.41.2",
     "webpack-stream": "^5.2.1",
-    "yargs": "^14.2.0"
+    "yargs": "^15.0.2"
   },
   "browserslist": [
     "last 2 versions",
