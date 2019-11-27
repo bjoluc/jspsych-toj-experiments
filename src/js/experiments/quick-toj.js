@@ -2,7 +2,7 @@
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
-import tojPlugin from "../plugins/jspsych-toj-image";
+import tojImagePlugin from "../plugins/jspsych-toj-image";
 import { TojPlugin } from "../plugins/jspsych-toj";
 
 import { TouchAdapter } from "../util/TouchAdapter";
@@ -220,7 +220,7 @@ export function createTimeline(jatosStudyInput = null) {
     probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
     reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
     on_load: () => {
-      const bgImageLeft = tojPlugin.addBackgroundImage(
+      const bgImageLeft = tojImagePlugin.addBackgroundImage(
         jsPsych.timelineVariable("bgImageLeft", true),
         jsPsych.timelineVariable("bgImageLeftProperties", true)
       );
@@ -228,7 +228,7 @@ export function createTimeline(jatosStudyInput = null) {
       touchAdapterLeft.bindByClass(
         jsPsych.timelineVariable("probeLeft", true) ? "toj-probe" : "toj-reference"
       );
-      const bgImageRight = tojPlugin.addBackgroundImage(
+      const bgImageRight = tojImagePlugin.addBackgroundImage(
         jsPsych.timelineVariable("bgImageRight", true),
         jsPsych.timelineVariable("bgImageRightProperties", true)
       );

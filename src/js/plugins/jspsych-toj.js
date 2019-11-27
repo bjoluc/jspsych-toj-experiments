@@ -148,7 +148,6 @@ export class TojPlugin {
     const reference = trial.reference_element;
 
     this.container.insertAdjacentHTML("beforeend", trial.fixation_mark_html);
-    // TODO append targets in quick-toj
 
     display_element.appendChild(this.container);
 

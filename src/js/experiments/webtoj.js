@@ -1,11 +1,10 @@
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-fullscreen";
 import "../plugins/jspsych-toj-image";
+import { TojPlugin } from "../plugins/jspsych-toj";
 
 export function createTimeline(jatosStudyInput = null) {
   let timeline = [];
-
-  console.log(jatosStudyInput);
 
   // Welcome screen
   timeline.push({
@@ -40,6 +39,8 @@ export function createTimeline(jatosStudyInput = null) {
   // Create toj-image trial object
   let toj = {
     type: "toj-image",
+    hide_stimuli: false,
+    modification_function: element => TojPlugin.flashElement(element, "toj-flash", 30),
     probe_image: jsPsych.timelineVariable("probe_image"),
     reference_image: jsPsych.timelineVariable("reference_image"),
     soa: jsPsych.timelineVariable("soa"),

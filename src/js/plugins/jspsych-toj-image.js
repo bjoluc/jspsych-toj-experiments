@@ -126,6 +126,10 @@ export class TojImagePlugin extends TojPlugin {
       trial.hide_stimuli
     );
 
+    // Append stimulus image elements to container
+    this.appendElement(trial.probe_element);
+    this.appendElement(trial.reference_element);
+
     await super.trial(display_element, trial);
   }
 }
