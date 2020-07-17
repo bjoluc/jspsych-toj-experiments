@@ -20,7 +20,7 @@
     "d3-color": "^1.4.0",
     "delay": "4.3.0",
     "jspsych": "^6.0.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "random-int": "2.0.1",
     "vsync-estimate": "^0.2.0"
   },
