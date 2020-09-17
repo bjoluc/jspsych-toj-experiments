@@ -1,19 +1,32 @@
+/**
+ * @title Color TOJ
+ * @description A TOJ experiment to measure color salience
+ * @version 1.0.0
+ *
+ * @imageDir images/common
+ */
+
+"use strict";
+
+import "../styles/main.scss";
+
 // jsPsych plugins
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
-import { TojPlugin } from "../plugins/jspsych-toj";
-import tojPlugin from "../plugins/jspsych-toj";
+
+import { TojPlugin } from "./plugins/jspsych-toj";
+import tojPlugin from "./plugins/jspsych-toj";
 
 import delay from "delay";
 import shuffle from "lodash/shuffle";
 import { lab } from "d3-color";
 import randomInt from "random-int";
 
-import { TouchAdapter } from "../util/TouchAdapter";
-import { Scaler } from "../util/Scaler";
-import { createBarStimulusGrid } from "../util/barStimuli";
-import { setAbsolutePosition } from "../util/positioning";
+import { TouchAdapter } from "./util/TouchAdapter";
+import { Scaler } from "./util/Scaler";
+import { createBarStimulusGrid } from "./util/barStimuli";
+import { setAbsolutePosition } from "./util/positioning";
 
 class ConditionGenerator {
   static gridSize = 7;
@@ -29,11 +42,7 @@ class ConditionGenerator {
     const a = [50, -50];
     const b = 0;
 
-    this._colors = a.map(a =>
-      lab(L, a, b)
-        .rgb()
-        .toString()
-    );
+    this._colors = a.map((a) => lab(L, a, b).rgb().toString());
   }
 
   generateOrientation(identifier = null) {
@@ -101,7 +110,7 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline(jatosStudyInput = null) {
+export function createTimeline() {
   let timeline = [];
 
   const touchAdapterSpace = new TouchAdapter(
@@ -149,7 +158,7 @@ export function createTimeline(jatosStudyInput = null) {
   const factors = {
     probeLeft: [true, false],
     salient: [true, false],
-    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map(x => x * 10),
+    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map((x) => x * 10),
   };
   const repetitions = 1;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
@@ -166,11 +175,11 @@ export function createTimeline(jatosStudyInput = null) {
   // Create TOJ plugin trial object
   const toj = {
     type: "toj",
-    modification_function: element => TojPlugin.flashElement(element, "toj-flash", 30),
+    modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
     probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
     reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
-    on_start: trial => {
+    on_start: (trial) => {
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
       const salient = jsPsych.timelineVariable("salient", true);
 
@@ -252,7 +261,7 @@ export function createTimeline(jatosStudyInput = null) {
   };
 
   // Generator function to create timeline variables for blocks
-  const blockGenerator = function*(blockCount) {
+  const blockGenerator = function* (blockCount) {
     let currentBlock = 1;
     while (currentBlock <= blockCount) {
       yield { block: currentBlock, blockCount };

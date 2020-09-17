@@ -8,10 +8,8 @@
 
 "use strict";
 
-// async function support
-import "core-js/stable";
-import "regenerator-runtime/runtime";
 import delay from "delay";
+import { playAudio } from "../util/audio";
 
 export class TojPlugin {
   info = {
@@ -58,20 +56,26 @@ export class TojPlugin {
         type: jsPsych.plugins.parameterType.KEYCODE,
         pretty_name: "Probe key",
         default: undefined,
-        description: "The key that the subject uses to select the probe",
+        description: "The key that the subject uses to give a 'probe first' response",
       },
       reference_key: {
         type: jsPsych.plugins.parameterType.KEYCODE,
         pretty_name: "Reference key",
         default: undefined,
-        description: "The key that the subject uses to select the reference",
+        description: "The key that the subject uses to give a 'reference first' response",
       },
       fixation_mark_html: {
         type: jsPsych.plugins.parameterType.HTML_STRING,
         pretty_name: "Fixation mark HTML code",
         default:
-          "<img class='toj-fixation-mark absolute-position' src='./images/fixmark.png'></img>",
+          "<img class='toj-fixation-mark absolute-position' src='media/images/common/fixmark.png'></img>",
         description: "(optional) The HTML code of the fixation mark",
+      },
+      play_feedback: {
+        type: jsPsych.plugins.parameterType.BOOLEAN,
+        pretty_name: "Play feedback",
+        default: false,
+        description: "(optional) Whether ot not to play a feedback sound at the end of the trial",
       },
     },
   };
@@ -143,35 +147,49 @@ export class TojPlugin {
     });
   }
 
-  async trial(display_element, trial) {
-    const probe = trial.probe_element;
-    const reference = trial.reference_element;
+  /**
+   * Given a two DOM elements, a SOA value, and a modification function, applies the modification
+   * function to the elements according to the given SOA.
+   *
+   * @param {Element} probe
+   * @param {Element} reference
+   * @param {(element: Element) => Promise<void>} modificationFunction
+   * @param {number} soa
+   *
+   */
+  static async doTojModification(probe, reference, modificationFunction, soa) {
+    if (soa < 0) {
+      modificationFunction(probe);
+      await delay(-soa);
+      modificationFunction(reference);
+    } else {
+      modificationFunction(reference);
+      if (soa != 0) {
+        await delay(soa);
+      }
+      modificationFunction(probe);
+    }
+  }
 
+  appendContainer(display_element, trial) {
     this.container.insertAdjacentHTML("beforeend", trial.fixation_mark_html);
-
     display_element.appendChild(this.container);
+  }
+
+  async trial(display_element, trial, appendContainer = true) {
+    if (appendContainer) {
+      this.appendContainer(display_element, trial);
+    }
 
     await delay(trial.fixation_time);
 
-    let measuredSoa;
-
-    const modificationFunction = trial.modification_function;
     // Modify stimulus elements according to SOA
-    if (trial.soa < 0) {
-      modificationFunction(probe);
-      const probeModifiedTime = performance.now();
-      await delay(-trial.soa);
-      modificationFunction(reference);
-      measuredSoa = probeModifiedTime - performance.now();
-    } else {
-      modificationFunction(reference);
-      const referenceModifiedTime = performance.now();
-      if (trial.soa != 0) {
-        await delay(trial.soa);
-      }
-      modificationFunction(probe);
-      measuredSoa = performance.now() - referenceModifiedTime;
-    }
+    await TojPlugin.doTojModification(
+      trial.probe_element,
+      trial.reference_element,
+      trial.modification_function,
+      trial.soa
+    );
 
     let keyboardResponse = {
       rt: null,
@@ -208,9 +226,12 @@ export class TojPlugin {
       response_key: responseKey,
       response: response,
       response_correct: correct,
-      measured_soa: measuredSoa,
       rt: keyboardResponse.rt,
     });
+
+    if (trial.play_feedback) {
+      await playAudio(`media/audio/feedback/${correct ? "right" : "wrong"}.wav`);
+    }
 
     // Finish trial and log data
     jsPsych.finishTrial(resultData);
