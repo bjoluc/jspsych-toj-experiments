@@ -1,12 +1,25 @@
+/**
+ * @title Quick TOJ
+ * @description A quick, browser-based TOJ experiment with orientation
+ * @version 1.0.0
+ *
+ * @imageDir images/common,images/quick-toj
+ */
+
+"use strict";
+
+import "../styles/main.scss";
+
 // jsPsych plugins
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
-import tojImagePlugin from "../plugins/jspsych-toj-image";
-import { TojPlugin } from "../plugins/jspsych-toj";
 
-import { TouchAdapter } from "../util/TouchAdapter";
-import { Scaler } from "../util/Scaler";
+import tojImagePlugin from "./plugins/jspsych-toj-image";
+import { TojPlugin } from "./plugins/jspsych-toj";
+
+import { TouchAdapter } from "./util/TouchAdapter";
+import { Scaler } from "./util/Scaler";
 import randomInt from "random-int";
 import delay from "delay";
 
@@ -71,10 +84,10 @@ class ConditionGenerator {
     }
 
     // Create image paths
-    cond.bgImageLeft = `images/quick-toj/background_${cond.oriLeft}.png`;
-    cond.bgImageRight = `images/quick-toj/background_${cond.oriRight}.png`;
-    cond.probeImage = `images/quick-toj/target_${cond.oriProbe}.png`;
-    cond.refImage = `images/quick-toj/target_${cond.oriRef}.png`;
+    cond.bgImageLeft = `media/images/quick-toj/background_${cond.oriLeft}.png`;
+    cond.bgImageRight = `media/images/quick-toj/background_${cond.oriRight}.png`;
+    cond.probeImage = `media/images/quick-toj/target_${cond.oriProbe}.png`;
+    cond.refImage = `media/images/quick-toj/target_${cond.oriRef}.png`;
 
     // Set background image options
     const bgDimensions = {
@@ -128,7 +141,7 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline(jatosStudyInput = null) {
+export function createTimeline() {
   let timeline = [];
 
   const touchAdapterSpace = new TouchAdapter(
@@ -146,7 +159,7 @@ export function createTimeline(jatosStudyInput = null) {
   timeline.push({
     type: "html-keyboard-response",
     stimulus:
-      "<p><img src='images/quick-toj/logo.png' style='max-width: 100vh;'></img><p/>" +
+      "<p><img src='media/images/quick-toj/logo.png' style='max-width: 100vh;'></img><p/>" +
       "<p>Thank you for taking the time to participate in QuickTOJ Web!<p/>" +
       "<p>Press any key to begin.</p>",
     on_load: bindSpaceTouchAdapterToWindow,
@@ -187,7 +200,7 @@ export function createTimeline(jatosStudyInput = null) {
   const factors = {
     probeLeft: [true, false],
     salient: [true, false],
-    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map(x => x * 10),
+    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map((x) => x * 10),
   };
   const repetitions = 1;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
@@ -209,7 +222,7 @@ export function createTimeline(jatosStudyInput = null) {
   // Create TOJ plugin trial object
   const toj = {
     type: "toj-image",
-    modification_function: element => TojPlugin.flashElement(element, "toj-flash", 30),
+    modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     hide_stimuli: false,
     probe_image: jsPsych.timelineVariable("probeImage"),
     reference_image: jsPsych.timelineVariable("refImage"),
@@ -265,7 +278,7 @@ export function createTimeline(jatosStudyInput = null) {
   };
 
   // Generator function to create timeline variables for blocks
-  const blockGenerator = function*(blockCount) {
+  const blockGenerator = function* (blockCount) {
     let currentBlock = 1;
     while (currentBlock <= blockCount) {
       yield { block: currentBlock, blockCount };
@@ -311,12 +324,4 @@ function* pathGenerator(prefix, fromNumber, toNumber, suffix) {
   for (let i = fromNumber; i <= toNumber; i++) {
     yield prefix + i + suffix;
   }
-}
-
-export function getPreloadImagePaths() {
-  const root = "images/quick-toj/";
-  let paths = [root + "logo.png"];
-  paths = paths.concat(Array.from(pathGenerator(root + "background_", 0, 17, ".png")));
-  paths = paths.concat(Array.from(pathGenerator(root + "target_", 0, 17, ".png")));
-  return paths;
 }

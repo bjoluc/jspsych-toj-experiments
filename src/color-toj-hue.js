@@ -1,9 +1,22 @@
+/**
+ * @title Color TOJ Hue
+ * @description A TOJ experiment to measure color salience
+ * @version 1.0.0
+ *
+ * @imageDir images/common
+ */
+
+"use strict";
+
+import "../styles/main.scss";
+
 // jsPsych plugins
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-fullscreen";
-import { TojPlugin } from "../plugins/jspsych-toj";
-import tojPlugin from "../plugins/jspsych-toj";
+
+import { TojPlugin } from "./plugins/jspsych-toj";
+import tojPlugin from "./plugins/jspsych-toj";
 
 import delay from "delay";
 import sample from "lodash/sample";
@@ -11,14 +24,10 @@ import shuffle from "lodash/shuffle";
 import { lab } from "d3-color";
 import randomInt from "random-int";
 
-import { TouchAdapter } from "../util/TouchAdapter";
-import { Scaler } from "../util/Scaler";
-import { createBarStimulusGrid } from "../util/barStimuli";
-import { setAbsolutePosition } from "../util/positioning";
-
-function calcAngleDegrees(x, y) {
-  return (Math.atan2(y, x) * 180) / Math.PI;
-}
+import { TouchAdapter } from "./util/TouchAdapter";
+import { Scaler } from "./util/Scaler";
+import { createBarStimulusGrid } from "./util/barStimuli";
+import { setAbsolutePosition } from "./util/positioning";
 
 const L = 50;
 const r = 50;
@@ -155,7 +164,7 @@ export function createTimeline(jatosStudyInput = null) {
   // Generate trials
   const factors = {
     probeLeft: [true, false],
-    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map(x => x * 10),
+    soa: [-10, -7, -5, -3, -1, 0, 1, 3, 5, 7, 10].map((x) => x * 10),
   };
   const repetitions = 2;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
@@ -172,11 +181,11 @@ export function createTimeline(jatosStudyInput = null) {
   // Create TOJ plugin trial object
   const toj = {
     type: "toj",
-    modification_function: element => TojPlugin.flashElement(element, "toj-flash", 30),
+    modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
     probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
     reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
-    on_start: trial => {
+    on_start: (trial) => {
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
       const cond = conditionGenerator.generateCondition(probeLeft);
 
@@ -255,7 +264,7 @@ export function createTimeline(jatosStudyInput = null) {
   };
 
   // Generator function to create timeline variables for blocks
-  const blockGenerator = function*(blockCount) {
+  const blockGenerator = function* (blockCount) {
     let currentBlock = 1;
     while (currentBlock <= blockCount) {
       yield { block: currentBlock, blockCount };
@@ -295,8 +304,4 @@ export function createTimeline(jatosStudyInput = null) {
   });
 
   return timeline;
-}
-
-export function getPreloadImagePaths() {
-  return [];
 }
