@@ -1,7 +1,7 @@
 /**
- * @title Color TOJ Negation
- * @description Experiment on negation in TVA instructions
- * @version 1.2
+ * @title Color TOJ Negation 2
+ * @description Experiment on negation in TVA instructions, single-target-pair version
+ * @version 1.0.0
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -19,12 +19,12 @@ import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-survey-multi-choice";
 import "jspsych/plugins/jspsych-fullscreen";
 import { TojPlugin } from "./plugins/jspsych-toj";
-import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
-import "./plugins/jspsych-toj-negation-dual";
+import tojNegationPlugin from "./plugins/jspsych-toj-negation";
+import "./plugins/jspsych-toj-negation";
 import estimateVsync from "vsync-estimate";
 
 import delay from "delay";
-import { sample, shuffle, isEqual } from "lodash";
+import { sample } from "lodash";
 import randomInt from "random-int";
 import { customAlphabet } from "nanoid";
 
@@ -39,28 +39,10 @@ const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667)
 const L = 50;
 const r = 50;
 
+const gridColor = "#777777";
+
 function degreesToRgb(degrees) {
   return labDegreesToRgb(degrees, L, r);
-}
-
-function primaryColorDegToName(degrees) {
-  degrees = degrees % 360;
-  if (degrees < 0) {
-    degrees = 360 + degrees;
-  }
-  switch (degrees) {
-    case 0:
-      return "red";
-    case 90:
-      return "yellow";
-    case 180:
-      return "green";
-    case 270:
-      return "blue";
-    default:
-      alert(degrees);
-      return null;
-  }
 }
 
 class TojTarget {
@@ -77,28 +59,27 @@ class TojTarget {
   }
 
   /**
-   * The number of the quadrant in which the target is displayed
+   * The english name of the target's color
    */
-  quadrant;
-
-  /**
-   * Whether the target is displayed in quadrant 2 or 3
-   */
-  get isLeft() {
-    return [2, 3].includes(this.quadrant);
+  get colorName() {
+    let degrees = this.colorDeg % 360;
+    if (degrees < 0) {
+      degrees = 360 + degrees;
+    }
+    switch (degrees) {
+      case 0:
+        return "red";
+      case 90:
+        return "yellow";
+      case 180:
+        return "green";
+      case 270:
+        return "blue";
+      default:
+        alert(degrees);
+        return null;
+    }
   }
-
-  /**
-   * Whether the target is displayed in quadrant 1 or 2
-   */
-  get isTop() {
-    return [1, 2].includes(this.quadrant);
-  }
-
-  /**
-   * Whether the target serves as a probe or a reference
-   */
-  isProbe;
 
   /**
    * Returns a random color degree value that differs from this target's color
@@ -107,6 +88,16 @@ class TojTarget {
   getDifferingPrimaryColorDeg() {
     return this.colorDeg + sample([90, 180, 270]);
   }
+
+  /**
+   * Whether the target is displayed on the left side of the screen
+   */
+  isLeft;
+
+  /**
+   * Whether the target serves as a probe or a reference
+   */
+  isProbe;
 
   /**
    * Position of the target within the bar grid ([x, y])
@@ -118,12 +109,7 @@ class ConditionGenerator {
   /**
    * The size ([x, y]) of the grid in one quadrant
    */
-  static gridSize = [7, 4];
-
-  /**
-   * Color variation (in LAB degree) between targets of a pair
-   */
-  static alpha = 20;
+  static gridSize = [7, 7];
 
   _previousOrientations = {};
   _previousPositions = {};
@@ -156,87 +142,29 @@ class ConditionGenerator {
     return sample([0, 90, 180, 270]);
   }
 
-  static generateColorDegOffset() {
-    return sample([-90, 90, 180]);
-  }
-
-  generateCondition(probeLeft) {
+  generateCondition(isProbeLeft) {
     const alpha = ConditionGenerator.alpha;
-    const targetPairs = [];
 
-    // Generate information for two pairs of targets
-    for (let pairIndex = 0; pairIndex < 2; pairIndex++) {
-      // Generate a target pair
+    // Generate a target pair
+    const probe = new TojTarget();
+    probe.isProbe = true;
+    probe.isLeft = isProbeLeft;
+    probe.colorDeg = ConditionGenerator.generateRandomPrimaryColorDeg();
 
-      const primary = new TojTarget();
-      const secondary = new TojTarget();
+    const reference = new TojTarget();
+    reference.isProbe = false;
+    reference.isLeft = !isProbeLeft;
+    reference.colorDeg = probe.getDifferingPrimaryColorDeg();
 
-      // Choose primary color
-      if (pairIndex == 0) {
-        // First pair
-        primary.colorDeg = ConditionGenerator.generateRandomPrimaryColorDeg();
-        secondary.colorDeg = primary.colorDeg + sample([alpha, -alpha]);
-      } else {
-        // 2nd pair: Primary target color has to differ from first pair color
-        const offset = ConditionGenerator.generateColorDegOffset();
-        primary.colorDeg = targetPairs[0].primary.colorDeg + offset;
-
-        let secondaryColorOffsetOptions;
-        switch (offset) {
-          case -90:
-            secondaryColorOffsetOptions = [-alpha];
-            break;
-          case 90:
-            secondaryColorOffsetOptions = [alpha];
-            break;
-          default:
-            secondaryColorOffsetOptions = [alpha, -alpha];
-        }
-        secondary.colorDeg = primary.colorDeg + sample(secondaryColorOffsetOptions);
-      }
-
-      targetPairs[pairIndex] = { primary, secondary, fixationTime: randomInt(300, 500) };
-    }
-
-    // Assign quadrants to targets
-
-    function isValidPermutation(permutation) {
-      // Invalid permutations are those which put a target pair in a column
-      const firstPairPermutation = permutation.slice(0, 2);
-      return [
-        [1, 4],
-        [4, 1],
-        [2, 3],
-        [3, 2],
-      ].every((pattern) => !isEqual(pattern, firstPairPermutation));
-    }
-
-    let permutation;
-    do {
-      permutation = shuffle([1, 2, 3, 4]);
-    } while (!isValidPermutation(permutation));
-
-    targetPairs[0].primary.quadrant = permutation[0];
-    targetPairs[0].secondary.quadrant = permutation[1];
-    targetPairs[1].primary.quadrant = permutation[2];
-    targetPairs[1].secondary.quadrant = permutation[3];
-
-    // Set isProbe
-    targetPairs.map(({ primary, secondary }) => {
-      primary.isProbe = probeLeft ? primary.isLeft : !primary.isLeft;
-      secondary.isProbe = !primary.isProbe;
-
-      [primary, secondary].map((target) => {
-        const xRange = target.isLeft ? [2, 5] : [1, 4];
-        target.gridPosition = ConditionGenerator.generateRandomPos(xRange, [1, 2]);
-      });
+    [probe, reference].map((target) => {
+      const xRange = target.isLeft ? [3, 5] : [2, 4];
+      target.gridPosition = ConditionGenerator.generateRandomPos(xRange, [2, 5]);
     });
 
     return {
-      targetPairs,
+      targets: { probe, reference },
+      fixationTime: randomInt(300, 500),
       rotation: this.generateOrientation(),
-      targetsToQuadrantMap: permutation,
-      distractorSOA: sample(soaChoices),
     };
   }
 }
@@ -424,7 +352,7 @@ export function createTimeline() {
   // Generate trials
   const factors = {
     isInstructionNegated: [true, false],
-    probeLeft: [true, false],
+    isProbeLeft: [true, false],
     soa: soaChoices,
   };
   const repetitions = 1;
@@ -441,85 +369,67 @@ export function createTimeline() {
 
   // Create TOJ plugin trial object
   const toj = {
-    type: "toj-negation-dual",
+    type: "toj-negation",
     modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
-    probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
-    reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
+    probe_key: leftKey,
+    reference_key: rightKey,
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
     instruction_voice: () => sample(["m", "f"]),
     on_start: async (trial) => {
-      const probeLeft = jsPsych.timelineVariable("probeLeft", true);
-      const cond = conditionGenerator.generateCondition(probeLeft);
+      const isProbeLeft = jsPsych.timelineVariable("isProbeLeft", true);
+      const cond = conditionGenerator.generateCondition(isProbeLeft);
 
       // Log probeLeft and condition
       trial.data = {
-        probeLeft,
+        isProbeLeft,
         condition: cond,
       };
 
-      trial.fixation_time = cond.targetPairs[0].fixationTime;
-      trial.distractor_fixation_time = cond.targetPairs[1].fixationTime;
+      trial.fixation_time = cond.fixationTime;
       trial.instruction_language = globalProps.instructionLanguage;
 
-      const gridColor = "#777777";
+      // Create targets and grids
+      [cond.targets.probe, cond.targets.reference].map((target) => {
+        const [gridElement, targetElement] = createBarStimulusGrid(
+          ConditionGenerator.gridSize,
+          target.gridPosition,
+          target.colorRgb,
+          gridColor,
+          1,
+          0.7,
+          0.1,
+          cond.rotation
+        );
+        tojNegationPlugin.appendElement(gridElement);
+        (target.isLeft ? touchAdapterLeft : touchAdapterRight).bindToElement(gridElement);
 
-      // Loop over targets, creating them and their grids in the corresponding quadrants
-      for (let i = 0; i < 2; i++) {
-        const targetPair = cond.targetPairs[i];
-        [targetPair.primary, targetPair.secondary].map((target) => {
-          const [gridElement, targetElement] = createBarStimulusGrid(
-            ConditionGenerator.gridSize,
-            target.gridPosition,
-            target.colorRgb,
-            gridColor,
-            1,
-            0.7,
-            0.1,
-            cond.rotation
-          );
-          tojNegationPlugin.appendElement(gridElement);
-          (target.isLeft ? touchAdapterLeft : touchAdapterRight).bindToElement(gridElement);
+        setAbsolutePosition(
+          gridElement,
+          (target.isLeft ? -1 : 1) * ConditionGenerator.gridSize[0] * 20,
+          0
+        );
 
-          setAbsolutePosition(
-            gridElement,
-            (target.isLeft ? -1 : 1) * ConditionGenerator.gridSize[0] * 20,
-            (target.isTop ? -1 : 1) * ConditionGenerator.gridSize[1] * 20
-          );
-
-          // Specify the elements for TOJ
-          if (i == 0) {
-            // Task-relevant target pair
-            if (target.isProbe) {
-              trial.probe_element = targetElement;
-            } else {
-              trial.reference_element = targetElement;
-            }
-          } else {
-            // Distracting target pair
-            if (target.isProbe) {
-              trial.distractor_probe_element = targetElement;
-            } else {
-              trial.distractor_reference_element = targetElement;
-            }
-          }
-        });
-      }
+        // Specify the elements for TOJ
+        if (target.isProbe) {
+          trial.probe_element = targetElement;
+        } else {
+          trial.reference_element = targetElement;
+        }
+      });
 
       // Set instruction color
-      trial.instruction_color = primaryColorDegToName(
-        cond.targetPairs[trial.instruction_negated ? 1 : 0].primary.colorDeg
-      );
-
-      // Set distractor SOA
-      trial.distractor_soa = cond.distractorSOA;
+      trial.instruction_color = (trial.instruction_negated
+        ? cond.targets.reference
+        : cond.targets.probe
+      ).colorName;
     },
     on_load: async () => {
       // Fit to window size
       scaler = new Scaler(
         document.getElementById("jspsych-toj-container"),
         ConditionGenerator.gridSize[0] * 40 * 2,
-        ConditionGenerator.gridSize[1] * 40 * 2,
+        ConditionGenerator.gridSize[1] * 40,
         10
       );
     },
