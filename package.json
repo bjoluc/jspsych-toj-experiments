@@ -8,15 +8,15 @@
   },
   "dependencies": {
     "d3-color": "^1.4.1",
-    "delay": "4.3.0",
+    "delay": "4.4.0",
     "jspsych": "github:bjoluc/jsPsych#fix-duplicate-body",
     "lodash": "4.17.20",
-    "nanoid": "3.1.3",
+    "nanoid": "3.1.12",
     "random-int": "2.0.1",
     "vsync-estimate": "^0.2.0"
   },
   "devDependencies": {
-    "jspsych-builder": "1.1.0"
+    "jspsych-builder": "1.2.1"
   },
   "browserslist": [
     "last 2 versions",
