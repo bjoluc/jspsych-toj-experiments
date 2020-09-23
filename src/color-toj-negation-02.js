@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation 2
  * @description Experiment on negation in TVA instructions, single-target-pair version
- * @version 1.0.0
+ * @version 1.1.0
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -194,7 +194,7 @@ export function createTimeline() {
 
   timeline.push({
     type: "survey-multi-choice",
-    preamble: "<p>Welcome to the Color TOJ Negation experiment!</P>",
+    preamble: "<p>Welcome to the Color TOJ Negation experiment 02!</P>",
     questions: [
       {
         prompt: "Is this the first time you participate in this experiment?",
@@ -264,17 +264,28 @@ export function createTimeline() {
       {
         type: "html-button-response",
         stimulus: () => {
-          const nanoid = customAlphabet("ABCDEFGHJKLMNOPQRSTUVWXYZ", 4);
+          const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ123456789", 4);
           const participantCode = nanoid();
           const newProps = { participantCode };
           Object.assign(globalProps, newProps);
           jsPsych.data.addProperties(newProps);
-          return (
-            `<p>Your participant code is <b>${participantCode}</b>.` +
-            `</p><p><b>Important:</b> Please make sure to write it down somewhere. You will need it the next time you participate in this experiment!`
-          );
+
+          if (globalProps.instructionLanguage === "en") {
+            return (
+              `<p>Your participant code is <b>${participantCode}</b>.` +
+              "</p><p><b>Important:</b> Please make sure to write it down somewhere. You will need it if you will do the second session or multiple sessions and for claiming your course credit!"
+            );
+          } else {
+            return (
+              `<p>Ihr Teilnahme-Code ist <b>${participantCode}</b>.` +
+              "</p><p><b>Wichtig:</b> Bitte vergessen Sie nicht, sich Ihren Code aufzuschreiben! Sie benötigen ihn, um die zweite Sitzung und ggf. weitere Sitzungen zu machen und Ihre Versuchspersonenstunden gutgeschrieben zu bekommen!"
+            );
+          }
         },
-        choices: ["Done, let's continue"],
+        choices: () =>
+          globalProps.instructionLanguage === "en"
+            ? ["Done, let's continue"]
+            : ["Ist gemacht, weiter!"],
       },
     ],
   });
@@ -312,34 +323,35 @@ export function createTimeline() {
     stimulus: () => {
       if (globalProps.instructionLanguage === "en") {
         return (
-          "<p>You will see a grid of bars and a point in the middle. Please try to focus at the point during the whole experiment.<br/>" +
-          "Four of the bars are colored (blue, yellow, red, or green), where there are two pairs of similarly colored bars.<br/>" +
+          "<p>You will see a grid of bars and a point in the middle. Please try to fixate the point during the whole experiment.<br/>" +
+          "Two of the bars are colored (blue, yellow, red, or green).<br/>" +
           'At the beginning of each trial, you will hear an instruction like "now red" or "not yellow" (make sure to turn your sound on).<br/>' +
-          "This informs you which of the two pairs of bars is relevant for the respective trial; you can ignore the other pair then.<br/>" +
+          "This informs you which of the bars is relevant for the respective trial.<br/>" +
           "Successively, each of the colored bars will flash once.<br/>" +
-          "Based on this, your task is to decide which of the two relevant bars has flashed first." +
-          "<p>If it was the left one, press <b>Q</b> (or tap on the left half of your screen).<br/>" +
-          "If it was the right one, press <b>P</b> (or tap on the right half of your screen).</p>" +
+          "Based on this, your task is to decide whether the bar indicated by the instruction flashed first or second." +
+          "<p>If it flashed first, press <b>Q</b> (or tap on the left half of your screen).<br/>" +
+          "If it flashed second, press <b>P</b> (or tap on the right half of your screen).</p>" +
           "<p>Please try to be as exact as possible and avoid mistakes.<br/>" +
-          "If it is not clear to you whether the left or the right bar flashed earlier, you may guess the answer.</p>" +
-          "<p>The experiment will start with a tutorial in which a sound at the end of each trial will indicate whether your answer was correct or not.</br>" +
+          "If it is not clear to you whether the bar flashed first or second, you may guess the answer.</p>" +
+          "If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: <b>Q</b> or left tap) or after the green one (i.e. second, response <b>P</b> or right tap)." +
+          "<p>The experiment will start with a tutorial of 30 trials in which a sound at the end of each trial will indicate whether your answer was correct or not.</br>" +
           "Note that the playback of audio may be delayed for some of the first trials.<br/>"
         );
       } else {
         return (
           "<p>Sie sehen gleich ein Muster aus Strichen und einen Punkt in der Mitte. Schauen sie möglichst während des gesamten Experimentes auf diesen Punkt.<br/>" +
-          "Vier der Striche sind farbig (blau, gelb, rot oder grün), wobei es jeweils zwei Paare von Strichen ähnlicher Farbe gibt.<br/>" +
-          'Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht gelb" (denken Sie daran, den Ton einzuschalten).<br/>' +
-          "Diese sagt Ihnen, welches der beiden Paare für die weitere Aufgabe relevant ist; " +
-          "das jeweils andere Paar brauchen Sie nicht zu beachten.</br>" +
+          "Zwei der Striche sind farbig (blau, gelb, rot oder grün).<br/>" +
+          'Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht gelb" (denken Sie daran, den Ton einzuschalten). ' +
+          "Diese sagt Ihnen, welcher der beiden Striche beurteilt werden soll.<br/>" +
           "Anschließend wird jeder der farbigen Striche kurz blinken.<br/>" +
-          "Ihre Aufgabe ist es, zu entscheiden, welcher der beiden Striche des relevanten Paares zuerst geblinkt hat." +
-          "<p>War es der Linke, drücken Sie <b>Q</b> (oder tippen auf die linke Bildschirmhälfte).<br/>" +
-          "War es der Rechte, drücken Sie <b>P</b> (oder tippen auf die rechte Bildschirmhälfte).</p>" +
+          "Ihre Aufgabe ist es, zu entscheiden, ob der in der Instruktion benannte Strich zuerst geblinkt hat oder als zweiter.</p>" +
+          "<p>Hat er zuerst geblinkt (vor dem anderen), drücken Sie <b>Q</b> (oder tippen Sie auf die linke Bildschirmhälfte).<br/>" +
+          "Hat er nach dem anderen, also als zweiter geblinkt, drücken Sie <b>P</b> (oder tippen Sie auf die rechte Bildschirmhälfte).</p>" +
           "<p>Versuchen Sie, genau zu sein und keine Fehler zu machen.<br/>" +
           "Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.</p>" +
-          "<p>Das Experiment beginnt mit einem Tutorial, bei dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.<br/>" +
-          "Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.<br/>"
+          "<p>Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann <b>Q</b> drücken oder links tippen. Oder hat er nach dem grünen geblinkt? Dann <b>P</b> drücken oder rechts tippen.</p>" +
+          "<p>Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.<br/>" +
+          "Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.</p>"
         );
       }
     },
@@ -440,41 +452,31 @@ export function createTimeline() {
     },
   };
 
-  // Create TOJ timelines
-  const tutorialTojTimeline = {
-    timeline: [toj],
-    timeline_variables: trials.slice(0, 30),
-    play_feedback: true,
-    randomize_order: true,
-  };
-
-  const experimentTojTimeline = {
-    timeline: [toj],
-    timeline_variables: trials,
-    randomize_order: true,
-  };
-
-  // Generator function to create timeline variables for blocks
-  const blockGenerator = function* (blockCount) {
-    let currentBlock = 1;
-    while (currentBlock <= blockCount) {
-      yield { block: currentBlock, blockCount };
-      currentBlock += 1;
+  // Tutorial
+  timeline.push(
+    {
+      timeline: [toj],
+      timeline_variables: trials.slice(0, 30),
+      play_feedback: true,
+      randomize_order: true,
+    },
+    {
+      type: "html-keyboard-response",
+      stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
+      on_start: bindSpaceTouchAdapterToWindow,
+      on_finish: unbindSpaceTouchAdapterFromWindow,
     }
-  };
+  );
 
-  const tutorialFinishedScreen = {
-    type: "html-keyboard-response",
-    stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
-    on_start: bindSpaceTouchAdapterToWindow,
-    on_finish: unbindSpaceTouchAdapterFromWindow,
-  };
+  // The trials array contains too many items for a block, so we divide the conditions into two
+  // blocks. BUT: We cannot easily alternate between the first half and the second half of the
+  // trials array in the `experimentTojTimeline` because the timeline_variables property does not
+  // take a function. Hence, we manually create all timeline entries instead of using nested
+  // timelines. :|
 
-  const blockFinishedScreen = {
+  const makeBlockFinishedScreenTrial = (block, blockCount) => ({
     type: "html-keyboard-response",
     stimulus: () => {
-      const block = jsPsych.timelineVariable("block", true);
-      const blockCount = jsPsych.timelineVariable("blockCount", true);
       if (block < blockCount) {
         return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
       } else {
@@ -483,15 +485,29 @@ export function createTimeline() {
     },
     on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
+  });
+
+  // Generator function to create the main experiment timeline
+  const timelineGenerator = function* (blockCount) {
+    let currentBlock = 1;
+    while (currentBlock <= blockCount) {
+      yield {
+        timeline: [toj],
+        // Alternate between first half and second half of trials array
+        timeline_variables:
+          currentBlock % 2 == 1
+            ? trials.slice(0, trials.length / 2) // first half
+            : trials.slice(trials.length / 2), // second half
+        randomize_order: true,
+      };
+      yield makeBlockFinishedScreenTrial(currentBlock, blockCount);
+      currentBlock += 1;
+    }
   };
 
-  // Add tutorial to main timeline
-  timeline.push(tutorialTojTimeline, tutorialFinishedScreen);
-
-  // Add experiment blocks to main timeline
+  // Main experiment
   timeline.push({
-    timeline: [experimentTojTimeline, blockFinishedScreen],
-    timeline_variables: Array.from(blockGenerator(10)),
+    timeline: Array.from(timelineGenerator(20)),
   });
 
   return timeline;
