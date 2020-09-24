@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation 2
  * @description Experiment on negation in TVA instructions, single-target-pair version
- * @version 1.1.0
+ * @version 1.1.1
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -507,7 +507,7 @@ export function createTimeline() {
 
   // Main experiment
   timeline.push({
-    timeline: Array.from(timelineGenerator(20)),
+    timeline: Array.from(timelineGenerator(10)),
   });
 
   return timeline;
