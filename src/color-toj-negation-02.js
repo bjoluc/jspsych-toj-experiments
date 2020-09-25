@@ -335,10 +335,12 @@ export function createTimeline() {
           "If it is not clear to you whether the bar flashed first or second, you may guess the answer.</p>" +
           "If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: <b>Q</b> or left tap) or after the green one (i.e. second, response <b>P</b> or right tap)." +
           "<p>The experiment will start with a tutorial of 30 trials in which a sound at the end of each trial will indicate whether your answer was correct or not.</br>" +
-          "Note that the playback of audio may be delayed for some of the first trials.<br/>"
+          "Note that the playback of audio may be delayed for some of the first trials.<br/>" +
+          "<p>If you usually wear glasses, please wear them for the experiment. If you have any form of color blindness, you cannot participate in this experiment.</p>"
         );
       } else {
         return (
+          "" +
           "<p>Sie sehen gleich ein Muster aus Strichen und einen Punkt in der Mitte. Schauen sie möglichst während des gesamten Experimentes auf diesen Punkt.<br/>" +
           "Zwei der Striche sind farbig (blau, gelb, rot oder grün).<br/>" +
           'Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht gelb" (denken Sie daran, den Ton einzuschalten). ' +
@@ -351,7 +353,8 @@ export function createTimeline() {
           "Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.</p>" +
           "<p>Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann <b>Q</b> drücken oder links tippen. Oder hat er nach dem grünen geblinkt? Dann <b>P</b> drücken oder rechts tippen.</p>" +
           "<p>Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.<br/>" +
-          "Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.</p>"
+          "Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.</p>" +
+          "<p>Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Experiment auf. Falls Sie eine Farbfehlsichtigkeit haben können Sie nicht an diesem Experiment teilnehmen.</p>"
         );
       }
     },
