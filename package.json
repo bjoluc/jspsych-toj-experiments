@@ -9,6 +9,7 @@
   "dependencies": {
     "d3-color": "^1.4.1",
     "delay": "4.4.0",
+    "howler": "^2.2.1",
     "jspsych": "github:bjoluc/jsPsych#fix-duplicate-body",
     "lodash": "4.17.20",
     "nanoid": "3.1.12",
