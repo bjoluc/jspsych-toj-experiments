@@ -25,5 +25,10 @@
     "ios >= 7"
   ],
   "author": "bjoluc",
-  "license": "MIT"
+  "license": "MIT",
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "printWidth": 100
+  }
 }
