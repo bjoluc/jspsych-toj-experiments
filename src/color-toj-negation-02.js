@@ -12,27 +12,21 @@
 
 import "../styles/main.scss";
 
-// jsPsych plugins
-import "jspsych/plugins/jspsych-html-button-response";
 import "jspsych/plugins/jspsych-html-keyboard-response";
-import "jspsych/plugins/jspsych-survey-text";
-import "jspsych/plugins/jspsych-survey-multi-choice";
-import "jspsych/plugins/jspsych-fullscreen";
 import { TojPlugin } from "./plugins/jspsych-toj";
 import tojNegationPlugin from "./plugins/jspsych-toj-negation";
 import "./plugins/jspsych-toj-negation";
-import estimateVsync from "vsync-estimate";
 
 import delay from "delay";
 import { sample } from "lodash";
 import randomInt from "random-int";
-import { customAlphabet } from "nanoid";
 
 import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
 import { LabColor } from "./util/colors";
+import { addIntroduction } from "./util/introduction";
 
 const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667);
 
@@ -154,176 +148,52 @@ export function createTimeline() {
   // `jsPsych.data.addProperties()` cannot easily be retrieved within trials (bug?).
   const globalProps = {};
 
-  timeline.push({
-    type: "survey-multi-choice",
-    preamble: "<p>Welcome to the Color TOJ Negation experiment 02!</P>",
-    questions: [
-      {
-        prompt: "Is this the first time you participate in this experiment?",
-        options: ["Yes", "No"],
-        required: true,
-      },
-      {
-        prompt:
-          "Most parts of this experiment are available in multiple languages. Please select a language.",
-        options: ["Deutsch", "English"],
-        required: true,
-      },
-    ],
-    on_start: async (trial) => {
-      const rate = await estimateVsync();
-      trial.data.refreshRate = Math.round(rate);
+  addIntroduction(timeline, globalProps, {
+    experimentName: "Color TOJ Negation 02",
+    instructions: {
+      en: `
+You will see a grid of bars and a point in the middle. Please try to fixate the point during the whole experiment.
+Two of the bars are colored (blue, yellow, red, or green).
+At the beginning of each trial, you will hear an instruction like "now red" or "not yellow" (make sure to turn your sound on).
+This informs you which of the bars is relevant for the respective trial.
+Successively, each of the colored bars will flash once.
+Based on this, your task is to decide whether the bar indicated by the instruction flashed first or second.
+
+If it flashed first, press **Q** (or tap on the left half of your screen).
+If it flashed second, press **P** (or tap on the right half of your screen).
+
+Please try to be as exact as possible and avoid mistakes.
+If it is not clear to you whether the bar flashed first or second, you may guess the answer.
+
+If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: **Q** or left tap) or after the green one (i.e. second, response **P** or right tap).
+
+The experiment will start with a tutorial of 30 trials in which a sound at the end of each trial will indicate whether your answer was correct or not.
+Note that the playback of audio may be delayed for some of the first trials.
+
+If you usually wear glasses, please wear them for the experiment. If you have any form of color blindness, you cannot participate in this experiment.
+      `,
+      de: `
+Sie sehen gleich ein Muster aus Strichen und einen Punkt in der Mitte. Schauen sie möglichst während des gesamten Experimentes auf diesen Punkt.
+Zwei der Striche sind farbig (blau, gelb, rot oder grün).
+Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht gelb" (denken Sie daran, den Ton einzuschalten).
+Diese sagt Ihnen, welcher der beiden Striche beurteilt werden soll.
+Anschließend wird jeder der farbigen Striche kurz blinken.
+Ihre Aufgabe ist es, zu entscheiden, ob der in der Instruktion benannte Strich zuerst geblinkt hat oder als zweiter.
+
+Hat er zuerst geblinkt (vor dem anderen), drücken Sie **Q** (oder tippen Sie auf die linke Bildschirmhälfte).
+Hat er nach dem anderen, also als zweiter geblinkt, drücken Sie **P** (oder tippen Sie auf die rechte Bildschirmhälfte).
+
+Versuchen Sie, genau zu sein und keine Fehler zu machen.
+Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.
+
+Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann **Q** drücken oder links tippen. Oder hat er nach dem grünen geblinkt? Dann **P** drücken oder rechts tippen.
+
+Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.
+Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
+
+Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Experiment auf. Falls Sie eine Farbfehlsichtigkeit haben können Sie nicht an diesem Experiment teilnehmen.
+      `,
     },
-    on_finish: (trial) => {
-      const responses = JSON.parse(trial.responses);
-      const newProps = {
-        isFirstParticipation: responses.Q0 === "Yes",
-        instructionLanguage: responses.Q1 === "Deutsch" ? "de" : "en",
-      };
-      Object.assign(globalProps, newProps);
-      jsPsych.data.addProperties(newProps);
-    },
-    data: {
-      userAgent: navigator.userAgent,
-    },
-  });
-
-  timeline.push({
-    conditional_function: () => !globalProps.isFirstParticipation,
-    timeline: [
-      {
-        type: "survey-text",
-        questions: [
-          {
-            prompt:
-              "<p>Please enter your participant code (the one you got the first time you participated in this experiment).</p>",
-            required: true,
-          },
-        ],
-        on_finish: (trial) => {
-          const responses = JSON.parse(trial.responses);
-          const newProps = {
-            participantCode: responses.Q0,
-          };
-          Object.assign(globalProps, newProps);
-          jsPsych.data.addProperties(newProps);
-        },
-      },
-    ],
-  });
-
-  timeline.push({
-    type: "html-button-response",
-    stimulus: () => {
-      return `<iframe class="declaration" src="media/misc/declaration_${globalProps.instructionLanguage}.html"></iframe>`;
-    },
-    choices: () => (globalProps.instructionLanguage === "en" ? ["I agree"] : ["Ich stimme zu"]),
-  });
-
-  timeline.push({
-    conditional_function: () => globalProps.isFirstParticipation,
-    timeline: [
-      {
-        type: "html-button-response",
-        stimulus: () => {
-          const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ123456789", 4);
-          const participantCode = nanoid();
-          const newProps = { participantCode };
-          Object.assign(globalProps, newProps);
-          jsPsych.data.addProperties(newProps);
-
-          if (globalProps.instructionLanguage === "en") {
-            return (
-              `<p>Your participant code is <b>${participantCode}</b>.` +
-              "</p><p><b>Important:</b> Please make sure to write it down somewhere. You will need it if you will do the second session or multiple sessions and for claiming your course credit!"
-            );
-          } else {
-            return (
-              `<p>Ihr Teilnahme-Code ist <b>${participantCode}</b>.` +
-              "</p><p><b>Wichtig:</b> Bitte vergessen Sie nicht, sich Ihren Code aufzuschreiben! Sie benötigen ihn, um die zweite Sitzung und ggf. weitere Sitzungen zu machen und Ihre Versuchspersonenstunden gutgeschrieben zu bekommen!"
-            );
-          }
-        },
-        choices: () =>
-          globalProps.instructionLanguage === "en"
-            ? ["Done, let's continue"]
-            : ["Ist gemacht, weiter!"],
-      },
-    ],
-  });
-
-  timeline.push({
-    conditional_function: () => globalProps.isFirstParticipation,
-    timeline: [
-      {
-        type: "survey-text",
-        questions: [{ prompt: "Please enter your age.", required: true }],
-      },
-      {
-        type: "survey-multi-choice",
-        questions: [
-          {
-            prompt: "Please choose your gender.",
-            options: ["male", "female", "diverse"],
-            required: true,
-            horizontal: true,
-          },
-        ],
-      },
-    ],
-  });
-
-  // Switch to fullscreen
-  timeline.push({
-    type: "fullscreen",
-    fullscreen_mode: true,
-  });
-
-  // Instructions
-  timeline.push({
-    type: "html-button-response",
-    stimulus: () => {
-      if (globalProps.instructionLanguage === "en") {
-        return (
-          "<p>You will see a grid of bars and a point in the middle. Please try to fixate the point during the whole experiment.<br/>" +
-          "Two of the bars are colored (blue, yellow, red, or green).<br/>" +
-          'At the beginning of each trial, you will hear an instruction like "now red" or "not yellow" (make sure to turn your sound on).<br/>' +
-          "This informs you which of the bars is relevant for the respective trial.<br/>" +
-          "Successively, each of the colored bars will flash once.<br/>" +
-          "Based on this, your task is to decide whether the bar indicated by the instruction flashed first or second." +
-          "<p>If it flashed first, press <b>Q</b> (or tap on the left half of your screen).<br/>" +
-          "If it flashed second, press <b>P</b> (or tap on the right half of your screen).</p>" +
-          "<p>Please try to be as exact as possible and avoid mistakes.<br/>" +
-          "If it is not clear to you whether the bar flashed first or second, you may guess the answer.</p>" +
-          "If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: <b>Q</b> or left tap) or after the green one (i.e. second, response <b>P</b> or right tap)." +
-          "<p>The experiment will start with a tutorial of 30 trials in which a sound at the end of each trial will indicate whether your answer was correct or not.</br>" +
-          "Note that the playback of audio may be delayed for some of the first trials.<br/>" +
-          "<p>If you usually wear glasses, please wear them for the experiment. If you have any form of color blindness, you cannot participate in this experiment.</p>"
-        );
-      } else {
-        return (
-          "" +
-          "<p>Sie sehen gleich ein Muster aus Strichen und einen Punkt in der Mitte. Schauen sie möglichst während des gesamten Experimentes auf diesen Punkt.<br/>" +
-          "Zwei der Striche sind farbig (blau, gelb, rot oder grün).<br/>" +
-          'Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht gelb" (denken Sie daran, den Ton einzuschalten). ' +
-          "Diese sagt Ihnen, welcher der beiden Striche beurteilt werden soll.<br/>" +
-          "Anschließend wird jeder der farbigen Striche kurz blinken.<br/>" +
-          "Ihre Aufgabe ist es, zu entscheiden, ob der in der Instruktion benannte Strich zuerst geblinkt hat oder als zweiter.</p>" +
-          "<p>Hat er zuerst geblinkt (vor dem anderen), drücken Sie <b>Q</b> (oder tippen Sie auf die linke Bildschirmhälfte).<br/>" +
-          "Hat er nach dem anderen, also als zweiter geblinkt, drücken Sie <b>P</b> (oder tippen Sie auf die rechte Bildschirmhälfte).</p>" +
-          "<p>Versuchen Sie, genau zu sein und keine Fehler zu machen.<br/>" +
-          "Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.</p>" +
-          "<p>Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann <b>Q</b> drücken oder links tippen. Oder hat er nach dem grünen geblinkt? Dann <b>P</b> drücken oder rechts tippen.</p>" +
-          "<p>Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.<br/>" +
-          "Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.</p>" +
-          "<p>Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Experiment auf. Falls Sie eine Farbfehlsichtigkeit haben können Sie nicht an diesem Experiment teilnehmen.</p>"
-        );
-      }
-    },
-    choices: () =>
-      globalProps.instructionLanguage === "en"
-        ? ["Got it, start the tutorial"]
-        : ["Alles klar, Tutorial starten"],
   });
 
   // Generate trials

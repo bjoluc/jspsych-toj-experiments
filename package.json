@@ -12,6 +12,7 @@
     "howler": "^2.2.1",
     "jspsych": "github:bjoluc/jsPsych#fix-duplicate-body",
     "lodash": "4.17.20",
+    "marked": "^1.2.3",
     "nanoid": "3.1.12",
     "random-int": "2.0.1",
     "vsync-estimate": "^0.2.0"
