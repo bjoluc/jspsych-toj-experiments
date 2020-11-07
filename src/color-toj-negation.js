@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation
  * @description Experiment on negation in TVA instructions
- * @version 1.2
+ * @version 2.0.0
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -32,49 +32,19 @@ import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
-import { labDegreesToRgb } from "./util/colors";
+import { LabColor } from "./util/colors";
 
 const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667);
 
 const L = 50;
 const r = 50;
 
-function degreesToRgb(degrees) {
-  return labDegreesToRgb(degrees, L, r);
-}
-
-function primaryColorDegToName(degrees) {
-  degrees = degrees % 360;
-  if (degrees < 0) {
-    degrees = 360 + degrees;
-  }
-  switch (degrees) {
-    case 0:
-      return "red";
-    case 90:
-      return "yellow";
-    case 180:
-      return "green";
-    case 270:
-      return "blue";
-    default:
-      alert(degrees);
-      return null;
-  }
-}
-
 class TojTarget {
   /**
-   * The angle of the target's color in the LAB color space
+   * The target's color
+   * @type LabColor
    */
-  colorDeg;
-
-  /**
-   * The target's color as a hexadecimal RGB color string
-   */
-  get colorRgb() {
-    return degreesToRgb(this.colorDeg);
-  }
+  color;
 
   /**
    * The number of the quadrant in which the target is displayed
@@ -97,19 +67,13 @@ class TojTarget {
 
   /**
    * Whether the target serves as a probe or a reference
+   * @type boolean
    */
   isProbe;
 
   /**
-   * Returns a random color degree value that differs from this target's color
-   * by a multiple of 90 degree.
-   */
-  getDifferingPrimaryColorDeg() {
-    return this.colorDeg + sample([90, 180, 270]);
-  }
-
-  /**
    * Position of the target within the bar grid ([x, y])
+   * @type number[]
    */
   gridPosition;
 }
@@ -152,12 +116,8 @@ class ConditionGenerator {
     return pos;
   }
 
-  static generateRandomPrimaryColorDeg() {
-    return sample([0, 90, 180, 270]);
-  }
-
-  static generateColorDegOffset() {
-    return sample([-90, 90, 180]);
+  static getRandomPrimaryColor() {
+    return new LabColor(sample([0, 90, 180, 270]));
   }
 
   generateCondition(probeLeft) {
@@ -174,15 +134,15 @@ class ConditionGenerator {
       // Choose primary color
       if (pairIndex == 0) {
         // First pair
-        primary.colorDeg = ConditionGenerator.generateRandomPrimaryColorDeg();
-        secondary.colorDeg = primary.colorDeg + sample([alpha, -alpha]);
+        primary.color = ConditionGenerator.getRandomPrimaryColor();
+        secondary.color = primary.color.getRandomRelativeColor([alpha, -alpha]);
       } else {
         // 2nd pair: Primary target color has to differ from first pair color
-        const offset = ConditionGenerator.generateColorDegOffset();
-        primary.colorDeg = targetPairs[0].primary.colorDeg + offset;
+        const colorDegOffset = sample([-90, 90, 180]);
+        primary.color = targetPairs[0].primary.color.getRelativeColor(colorDegOffset);
 
         let secondaryColorOffsetOptions;
-        switch (offset) {
+        switch (colorDegOffset) {
           case -90:
             secondaryColorOffsetOptions = [-alpha];
             break;
@@ -192,7 +152,7 @@ class ConditionGenerator {
           default:
             secondaryColorOffsetOptions = [alpha, -alpha];
         }
-        secondary.colorDeg = primary.colorDeg + sample(secondaryColorOffsetOptions);
+        secondary.color = primary.color.getRelativeColor(sample(secondaryColorOffsetOptions));
       }
 
       targetPairs[pairIndex] = { primary, secondary, fixationTime: randomInt(300, 500) };
@@ -471,7 +431,7 @@ export function createTimeline() {
           const [gridElement, targetElement] = createBarStimulusGrid(
             ConditionGenerator.gridSize,
             target.gridPosition,
-            target.colorRgb,
+            target.color.toRgb(),
             gridColor,
             1,
             0.7,
@@ -507,9 +467,9 @@ export function createTimeline() {
       }
 
       // Set instruction color
-      trial.instruction_color = primaryColorDegToName(
-        cond.targetPairs[trial.instruction_negated ? 1 : 0].primary.colorDeg
-      );
+      trial.instruction_color = cond.targetPairs[
+        trial.instruction_negated ? 1 : 0
+      ].primary.color.toName();
 
       // Set distractor SOA
       trial.distractor_soa = cond.distractorSOA;

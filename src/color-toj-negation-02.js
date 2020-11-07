@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation 2
  * @description Experiment on negation in TVA instructions, single-target-pair version
- * @version 1.2.1
+ * @version 2.0.0
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -32,7 +32,7 @@ import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
-import { labDegreesToRgb } from "./util/colors";
+import { LabColor } from "./util/colors";
 
 const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667);
 
@@ -41,66 +41,28 @@ const r = 50;
 
 const gridColor = "#777777";
 
-function degreesToRgb(degrees) {
-  return labDegreesToRgb(degrees, L, r);
-}
-
 class TojTarget {
   /**
-   * The angle of the target's color in the LAB color space
+   * The target's color
+   * @type LabColor
    */
-  colorDeg;
-
-  /**
-   * The target's color as a hexadecimal RGB color string
-   */
-  get colorRgb() {
-    return degreesToRgb(this.colorDeg);
-  }
-
-  /**
-   * The english name of the target's color
-   */
-  get colorName() {
-    let degrees = this.colorDeg % 360;
-    if (degrees < 0) {
-      degrees = 360 + degrees;
-    }
-    switch (degrees) {
-      case 0:
-        return "red";
-      case 90:
-        return "yellow";
-      case 180:
-        return "green";
-      case 270:
-        return "blue";
-      default:
-        alert(degrees);
-        return null;
-    }
-  }
-
-  /**
-   * Returns a random color degree value that differs from this target's color
-   * by a multiple of 90 degree.
-   */
-  getDifferingPrimaryColorDeg() {
-    return this.colorDeg + sample([90, 180, 270]);
-  }
+  color;
 
   /**
    * Whether the target is displayed on the left side of the screen
+   * @type boolean
    */
   isLeft;
 
   /**
    * Whether the target serves as a probe or a reference
+   * @type boolean
    */
   isProbe;
 
   /**
    * Position of the target within the bar grid ([x, y])
+   * @type number[]
    */
   gridPosition;
 }
@@ -129,6 +91,10 @@ class ConditionGenerator {
     return [randomInt(...xRange), randomInt(...yRange)];
   }
 
+  static getRandomPrimaryColor() {
+    return new LabColor(sample([0, 90, 180, 270]));
+  }
+
   generatePosition(identifier, xRange = [2, 5], yRange = [2, 5]) {
     let pos;
     do {
@@ -138,10 +104,6 @@ class ConditionGenerator {
     return pos;
   }
 
-  static generateRandomPrimaryColorDeg() {
-    return sample([0, 90, 180, 270]);
-  }
-
   generateCondition(isProbeLeft) {
     const alpha = ConditionGenerator.alpha;
 
@@ -149,12 +111,12 @@ class ConditionGenerator {
     const probe = new TojTarget();
     probe.isProbe = true;
     probe.isLeft = isProbeLeft;
-    probe.colorDeg = ConditionGenerator.generateRandomPrimaryColorDeg();
+    probe.color = ConditionGenerator.getRandomPrimaryColor();
 
     const reference = new TojTarget();
     reference.isProbe = false;
     reference.isLeft = !isProbeLeft;
-    reference.colorDeg = probe.getDifferingPrimaryColorDeg();
+    reference.color = ConditionGenerator.getRandomPrimaryColor();
 
     [probe, reference].map((target) => {
       const xRange = target.isLeft ? [3, 5] : [2, 4];
@@ -409,7 +371,7 @@ export function createTimeline() {
         const [gridElement, targetElement] = createBarStimulusGrid(
           ConditionGenerator.gridSize,
           target.gridPosition,
-          target.colorRgb,
+          target.color.toRgb(),
           gridColor,
           1,
           0.7,
@@ -437,7 +399,7 @@ export function createTimeline() {
       trial.instruction_color = (trial.instruction_negated
         ? cond.targets.reference
         : cond.targets.probe
-      ).colorName;
+      ).color.toName();
     },
     on_load: async () => {
       // Fit to window size

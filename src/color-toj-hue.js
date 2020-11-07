@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Hue
  * @description A TOJ experiment to measure color salience
- * @version 1.0.0
+ * @version 2.0.0
  *
  * @imageDir images/common
  */
@@ -21,23 +21,13 @@ import tojPlugin from "./plugins/jspsych-toj";
 import delay from "delay";
 import sample from "lodash/sample";
 import shuffle from "lodash/shuffle";
-import { lab } from "d3-color";
 import randomInt from "random-int";
 
 import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
-
-const L = 50;
-const r = 50;
-
-function degreesToRgb(degrees) {
-  const angle = (degrees * Math.PI) / 180;
-  return lab(L, r * Math.cos(angle), r * Math.sin(angle))
-    .rgb()
-    .toString();
-}
+import { LabColor } from "./util/colors";
 
 class ConditionGenerator {
   static gridSize = 7;
@@ -77,21 +67,18 @@ class ConditionGenerator {
     const cond = {};
 
     const [colorDegLeft, colorDegRight] = shuffle([-90, 90]);
-    cond.colorDegLeft = colorDegLeft;
-    cond.colorDegRight = colorDegRight;
-    const colorLeft = degreesToRgb(colorDegLeft);
-    const colorRight = degreesToRgb(colorDegRight);
-
+    cond.colorLeft = new LabColor(colorDegLeft);
+    cond.colorRight = new LabColor(colorDegRight);
     cond.probeColorDegOffset = sample([-60, 60, -120, 120]);
 
     if (probeLeft) {
-      cond.colorProbe = degreesToRgb(colorDegLeft + cond.probeColorDegOffset);
-      cond.colorProbeGrid = colorLeft;
-      cond.colorReference = colorRight;
+      cond.colorProbe = cond.colorLeft.getRelativeColor(cond.probeColorDegOffset);
+      cond.colorProbeGrid = cond.colorLeft;
+      cond.colorReference = cond.colorRight;
     } else {
-      cond.colorProbe = degreesToRgb(colorDegRight + cond.probeColorDegOffset);
-      cond.colorProbeGrid = colorRight;
-      cond.colorReference = colorLeft;
+      cond.colorProbe = cond.colorRight.getRelativeColor(cond.probeColorDegOffset);
+      cond.colorProbeGrid = cond.colorRight;
+      cond.colorReference = cond.colorLeft;
     }
 
     cond.rotationProbe = this.generateOrientation();
@@ -117,7 +104,7 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline(jatosStudyInput = null) {
+export function createTimeline() {
   let timeline = [];
 
   const touchAdapterSpace = new TouchAdapter(
@@ -205,8 +192,8 @@ export function createTimeline(jatosStudyInput = null) {
       const [probeGrid, probeTarget] = createBarStimulusGrid(
         gridSize,
         cond.posProbe,
-        cond.colorProbe,
-        cond.colorProbeGrid,
+        cond.colorProbe.toRgb(),
+        cond.colorProbeGrid.toRgb(),
         targetScaleFactor,
         distractorScaleFactor,
         distractorScaleFactorSD,
@@ -215,8 +202,8 @@ export function createTimeline(jatosStudyInput = null) {
       const [referenceGrid, referenceTarget] = createBarStimulusGrid(
         gridSize,
         cond.posRef,
-        cond.colorReference,
-        cond.colorReference,
+        cond.colorReference.toRgb(),
+        cond.colorReference.toRgb(),
         targetScaleFactor,
         distractorScaleFactor,
         distractorScaleFactorSD,

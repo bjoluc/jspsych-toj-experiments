@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ
  * @description A TOJ experiment to measure color salience
- * @version 1.0.0
+ * @version 1.0.1
  *
  * @imageDir images/common
  */
@@ -27,6 +27,7 @@ import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
+import { LabColor } from "./util/colors";
 
 class ConditionGenerator {
   static gridSize = 7;
@@ -36,13 +37,7 @@ class ConditionGenerator {
   _colors = undefined;
 
   constructor() {
-    // Generate colors
-    // L = 50, a ∈ {50,-50}, b = 0
-    const L = 50;
-    const a = [50, -50];
-    const b = 0;
-
-    this._colors = a.map((a) => lab(L, a, b).rgb().toString());
+    this._colors = [0, 180].map((degrees) => new LabColor(degrees).toRgb());
   }
 
   generateOrientation(identifier = null) {
@@ -301,8 +296,4 @@ export function createTimeline() {
   });
 
   return timeline;
-}
-
-export function getPreloadImagePaths() {
-  return [];
 }
