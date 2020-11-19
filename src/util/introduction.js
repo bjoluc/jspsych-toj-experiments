@@ -29,6 +29,7 @@ marked.setOptions({ breaks: true });
  * @param {any[]} timeline The jsPsych timeline to add the introduction trials to
  * @param {any} globalProps An object that global properties such as language choice and participant code will be assigned to
  * @param {{
+ *   skip?: boolean; // Whether or not to skip the introduction and use default properties; useful for development.
  *   experimentName: string;
  *   instructions: { // Markdown instruction strings
  *     de: string;
@@ -37,6 +38,13 @@ marked.setOptions({ breaks: true });
  * }} options
  */
 export function addIntroduction(timeline, globalProps, options) {
+  if (options.skip) {
+    globalProps.instructionLanguage = "en";
+    globalProps.isFirstParticipation = false;
+    globalProps.participantCode = "ABCD";
+    return;
+  }
+
   timeline.push({
     type: "survey-multi-choice",
     preamble: `<p>Welcome to the ${options.experimentName} experiment!</p>`,
