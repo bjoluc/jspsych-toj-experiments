@@ -6,7 +6,7 @@ export class TojNegationPlugin extends TojPlugin {
   constructor() {
     super();
     this.info = {
-      name: "toj-negation",
+      name: "toj-negation-dual",
       parameters: Object.assign(
         {
           distractor_probe_element: {
