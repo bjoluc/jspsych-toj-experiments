@@ -18,7 +18,7 @@ import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
 import "./plugins/jspsych-toj-negation-dual";
 
 import delay from "delay";
-import { sample, shuffle, isEqual } from "lodash";
+import { sample } from "lodash";
 import randomInt from "random-int";
 
 import { TouchAdapter } from "./util/TouchAdapter";
@@ -26,38 +26,23 @@ import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
 import { LabColor } from "./util/colors";
+import { Quadrant } from "./util/Quadrant";
 import { addIntroduction } from "./util/introduction";
 
 const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667);
 
-const L = 50;
-const r = 50;
-
 class TojTarget {
   /**
    * The target's color
-   * @type LabColor
+   * @type {LabColor}
    */
   color;
 
   /**
-   * The number of the quadrant in which the target is displayed
+   * The quadrant in which the target is displayed
+   * @type {Quadrant}
    */
   quadrant;
-
-  /**
-   * Whether the target is displayed in quadrant 2 or 3
-   */
-  get isLeft() {
-    return [2, 3].includes(this.quadrant);
-  }
-
-  /**
-   * Whether the target is displayed in quadrant 1 or 2
-   */
-  get isTop() {
-    return [1, 2].includes(this.quadrant);
-  }
 
   /**
    * Whether the target serves as a probe or a reference
@@ -118,12 +103,17 @@ class ConditionGenerator {
     const alpha = ConditionGenerator.alpha;
     const targetPairs = [];
 
+    // Choose quadrants for targets
+    const quadrantPairs = Quadrant.getRandomMixedSidePairs();
+
     // Generate information for two pairs of targets
     for (let pairIndex = 0; pairIndex < 2; pairIndex++) {
-      // Generate a target pair
-
+      // Create a target pair
       const primary = new TojTarget();
       const secondary = new TojTarget();
+
+      primary.quadrant = quadrantPairs[pairIndex][0];
+      secondary.quadrant = quadrantPairs[pairIndex][1];
 
       // Choose primary color
       if (pairIndex == 0) {
@@ -149,47 +139,22 @@ class ConditionGenerator {
         secondary.color = primary.color.getRelativeColor(sample(secondaryColorOffsetOptions));
       }
 
-      targetPairs[pairIndex] = { primary, secondary, fixationTime: randomInt(300, 500) };
-    }
-
-    // Assign quadrants to targets
-
-    function isValidPermutation(permutation) {
-      // Invalid permutations are those which put a target pair in a column
-      const firstPairPermutation = permutation.slice(0, 2);
-      return [
-        [1, 4],
-        [4, 1],
-        [2, 3],
-        [3, 2],
-      ].every((pattern) => !isEqual(pattern, firstPairPermutation));
-    }
-
-    let permutation;
-    do {
-      permutation = shuffle([1, 2, 3, 4]);
-    } while (!isValidPermutation(permutation));
-
-    targetPairs[0].primary.quadrant = permutation[0];
-    targetPairs[0].secondary.quadrant = permutation[1];
-    targetPairs[1].primary.quadrant = permutation[2];
-    targetPairs[1].secondary.quadrant = permutation[3];
-
-    // Set isProbe
-    targetPairs.map(({ primary, secondary }) => {
-      primary.isProbe = probeLeft ? primary.isLeft : !primary.isLeft;
+      primary.isProbe = probeLeft ? primary.quadrant.isLeft() : !primary.quadrant.isLeft();
       secondary.isProbe = !primary.isProbe;
 
       [primary, secondary].map((target) => {
-        const xRange = target.isLeft ? [2, 5] : [1, 4];
-        target.gridPosition = ConditionGenerator.generateRandomPos(xRange, [1, 2]);
+        target.gridPosition = ConditionGenerator.generateRandomPos(
+          target.quadrant.isLeft() ? [2, 5] : [1, 4],
+          [1, 2]
+        );
       });
-    });
+
+      targetPairs[pairIndex] = { pairIndex, primary, secondary, fixationTime: randomInt(300, 500) };
+    }
 
     return {
       targetPairs,
       rotation: this.generateOrientation(),
-      targetsToQuadrantMap: permutation,
       distractorSOA: sample(soaChoices),
     };
   }
@@ -302,8 +267,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       const gridColor = "#777777";
 
       // Loop over targets, creating them and their grids in the corresponding quadrants
-      for (let i = 0; i < 2; i++) {
-        const targetPair = cond.targetPairs[i];
+      for (const targetPair of cond.targetPairs) {
         [targetPair.primary, targetPair.secondary].map((target) => {
           const [gridElement, targetElement] = createBarStimulusGrid(
             ConditionGenerator.gridSize,
@@ -316,16 +280,18 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
             cond.rotation
           );
           tojNegationPlugin.appendElement(gridElement);
-          (target.isLeft ? touchAdapterLeft : touchAdapterRight).bindToElement(gridElement);
+          (target.quadrant.isLeft() ? touchAdapterLeft : touchAdapterRight).bindToElement(
+            gridElement
+          );
 
           setAbsolutePosition(
             gridElement,
-            (target.isLeft ? -1 : 1) * ConditionGenerator.gridSize[0] * 20,
-            (target.isTop ? -1 : 1) * ConditionGenerator.gridSize[1] * 20
+            (target.quadrant.isLeft() ? -1 : 1) * ConditionGenerator.gridSize[0] * 20,
+            (target.quadrant.isTop() ? -1 : 1) * ConditionGenerator.gridSize[1] * 20
           );
 
           // Specify the elements for TOJ
-          if (i == 0) {
+          if (targetPair.pairIndex == 0) {
             // Task-relevant target pair
             if (target.isProbe) {
               trial.probe_element = targetElement;
