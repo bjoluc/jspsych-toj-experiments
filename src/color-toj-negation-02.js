@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation 2
  * @description Experiment on negation in TVA instructions, single-target-pair version
- * @version 2.0.0
+ * @version 2.0.1
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -107,7 +107,7 @@ class ConditionGenerator {
     const reference = new TojTarget();
     reference.isProbe = false;
     reference.isLeft = !isProbeLeft;
-    reference.color = ConditionGenerator.getRandomPrimaryColor();
+    reference.color = probe.color.getRandomRelativeColor([90, 180, 270]);
 
     [probe, reference].map((target) => {
       const xRange = target.isLeft ? [3, 5] : [2, 4];
