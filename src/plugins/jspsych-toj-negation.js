@@ -8,11 +8,11 @@ export class TojNegationPlugin extends TojPlugin {
       name: "toj-negation",
       parameters: {
         ...this.info.parameters,
-        instruction_color: {
+        instruction_filename: {
           type: jsPsych.plugins.parameterType.STRING,
-          pretty_name: "Instruction color",
+          pretty_name: "Instruction filename",
           default: null,
-          description: "The color to be named in the instruction",
+          description: "The filename (basename only) of the property to be used in the instruction",
         },
         instruction_negated: {
           type: jsPsych.plugins.parameterType.STRING,
@@ -42,7 +42,7 @@ export class TojNegationPlugin extends TojPlugin {
     // Play instruction
     const audioBaseUrl = `media/audio/color-toj-negation/${trial.instruction_language}/${trial.instruction_voice}/`;
     await playAudio(audioBaseUrl + (trial.instruction_negated ? "not" : "now") + ".wav");
-    await playAudio(audioBaseUrl + trial.instruction_color + ".wav");
+    await playAudio(audioBaseUrl + trial.instruction_filename + ".wav");
 
     await super.trial(display_element, trial, false);
   }

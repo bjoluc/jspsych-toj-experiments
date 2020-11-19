@@ -36,11 +36,12 @@ export class TojNegationPlugin extends TojPlugin {
             default: 0,
             description: "Stimulus onset asynchrony of the distractor stimuli",
           },
-          instruction_color: {
+          instruction_filename: {
             type: jsPsych.plugins.parameterType.STRING,
-            pretty_name: "Instruction color",
+            pretty_name: "Instruction filename",
             default: null,
-            description: "The color to be named in the instruction",
+            description:
+              "The filename (basename only) of the property to be used in the instruction",
           },
           instruction_negated: {
             type: jsPsych.plugins.parameterType.STRING,
@@ -60,6 +61,12 @@ export class TojNegationPlugin extends TojPlugin {
             default: null,
             description: "The voice of the instruction ('m' or 'f')",
           },
+          instruction_base_directory: {
+            type: jsPsych.plugins.parameterType.STRING,
+            pretty_name: "Instruction base directory",
+            default: "media/audio/color-toj-negation",
+            description: "The directory that contains the experiment's instruction audio files",
+          },
         },
         this.info.parameters
       ),
@@ -70,9 +77,9 @@ export class TojNegationPlugin extends TojPlugin {
     this.appendContainer(display_element, trial);
 
     // Play instruction
-    const audioBaseUrl = `media/audio/color-toj-negation/${trial.instruction_language}/${trial.instruction_voice}/`;
+    const audioBaseUrl = `${trial.instruction_base_directory}/${trial.instruction_language}/${trial.instruction_voice}/`;
     await playAudio(audioBaseUrl + (trial.instruction_negated ? "not" : "now") + ".wav");
-    await playAudio(audioBaseUrl + trial.instruction_color + ".wav");
+    await playAudio(audioBaseUrl + trial.instruction_filename + ".wav");
 
     const modifyDistractorStimuli = async () => {
       await delay(trial.distractor_fixation_time);

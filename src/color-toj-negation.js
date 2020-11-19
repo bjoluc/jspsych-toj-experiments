@@ -180,6 +180,7 @@ export function createTimeline() {
   };
 
   const globalProps = addIntroduction(timeline, {
+    skip: false,
     experimentName: "Color TOJ Negation",
     instructions: {
       en: `
@@ -306,7 +307,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       }
 
       // Set instruction color
-      trial.instruction_color = cond.targetPairs[
+      trial.instruction_filename = cond.targetPairs[
         trial.instruction_negated ? 1 : 0
       ].primary.color.toName();
 

@@ -30,9 +30,6 @@ import { addIntroduction } from "./util/introduction";
 
 const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667);
 
-const L = 50;
-const r = 50;
-
 const gridColor = "#777777";
 
 class TojTarget {
@@ -145,6 +142,7 @@ export function createTimeline() {
   };
 
   const globalProps = addIntroduction(timeline, {
+    skip: false,
     experimentName: "Color TOJ Negation 02",
     instructions: {
       en: `
@@ -262,7 +260,7 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
       });
 
       // Set instruction color
-      trial.instruction_color = (trial.instruction_negated
+      trial.instruction_filename = (trial.instruction_negated
         ? cond.targets.reference
         : cond.targets.probe
       ).color.toName();
