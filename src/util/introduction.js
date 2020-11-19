@@ -15,7 +15,9 @@ import marked from "marked";
 marked.setOptions({ breaks: true });
 
 /**
- * Adds introduction trials to a provided jsPsych timeline.
+ * Adds introduction trials to a provided jsPsych timeline and returns an object that will be
+ * populated with global properties set during the introduction trials (such as language choice and
+ * participant code).
  *
  * The trials are:
  *  * A welcome page with radio buttons for first time participation and language selection, including vsync detection and user agent logging in the background
@@ -27,7 +29,6 @@ marked.setOptions({ breaks: true });
  *  * A tutorial page
  *
  * @param {any[]} timeline The jsPsych timeline to add the introduction trials to
- * @param {any} globalProps An object that global properties such as language choice and participant code will be assigned to
  * @param {{
  *   skip?: boolean; // Whether or not to skip the introduction and use default properties; useful for development.
  *   experimentName: string;
@@ -36,14 +37,23 @@ marked.setOptions({ breaks: true });
  *     en: string;
  *   }
  * }} options
+ *
+ * @returns {{
+ *  instructionLanguage: "de"|"en";
+ *  isFirstParticipation: boolean;,
+ *  participantCode: string;
+ * }}
  */
-export function addIntroduction(timeline, globalProps, options) {
+export function addIntroduction(timeline, options) {
   if (options.skip) {
-    globalProps.instructionLanguage = "en";
-    globalProps.isFirstParticipation = false;
-    globalProps.participantCode = "ABCD";
-    return;
+    return {
+      instructionLanguage: "en",
+      isFirstParticipation: false,
+      participantCode: "ABCD",
+    };
   }
+
+  const globalProps = {};
 
   timeline.push({
     type: "survey-multi-choice",
@@ -183,4 +193,6 @@ export function addIntroduction(timeline, globalProps, options) {
         ? ["Got it, start the tutorial"]
         : ["Alles klar, Tutorial starten"],
   });
+
+  return globalProps;
 }

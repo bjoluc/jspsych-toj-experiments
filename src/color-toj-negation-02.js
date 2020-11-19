@@ -144,11 +144,7 @@ export function createTimeline() {
     touchAdapterSpace.unbindFromElement(window);
   };
 
-  // This is a hack to work around jsPsych.data.addProperties(). It seems like data set via
-  // `jsPsych.data.addProperties()` cannot easily be retrieved within trials (bug?).
-  const globalProps = {};
-
-  addIntroduction(timeline, globalProps, {
+  const globalProps = addIntroduction(timeline, {
     experimentName: "Color TOJ Negation 02",
     instructions: {
       en: `
