@@ -8,17 +8,17 @@
   },
   "dependencies": {
     "d3-color": "^1.4.1",
-    "delay": "4.4.0",
+    "delay": "5.0.0",
     "howler": "^2.2.1",
-    "jspsych": "github:bjoluc/jsPsych#fix-duplicate-body",
+    "jspsych": "github:jsPsych/jsPsych#v6.2.0",
     "lodash": "4.17.20",
-    "marked": "^1.2.3",
-    "nanoid": "3.1.12",
+    "marked": "^1.2.9",
+    "nanoid": "3.1.20",
     "random-int": "2.0.1",
     "vsync-estimate": "^0.2.0"
   },
   "devDependencies": {
-    "jspsych-builder": "1.2.1"
+    "jspsych-builder": "1.4.2"
   },
   "browserslist": [
     "last 2 versions",
