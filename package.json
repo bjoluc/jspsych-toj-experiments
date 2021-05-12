@@ -7,18 +7,18 @@
     "url": "git://github.com/bjoluc/jspsych-toj-experiments.git"
   },
   "dependencies": {
-    "d3-color": "^1.4.1",
+    "d3-color": "^2.0.0",
     "delay": "5.0.0",
     "howler": "^2.2.1",
-    "jspsych": "github:jsPsych/jsPsych#v6.2.0",
-    "lodash": "4.17.20",
-    "marked": "^1.2.9",
-    "nanoid": "3.1.20",
-    "random-int": "2.0.1",
+    "jspsych": "github:jsPsych/jsPsych#v6.3.1",
+    "lodash": "4.17.21",
+    "marked": "^2.0.3",
+    "nanoid": "3.1.23",
+    "random-int": "3.0.0",
     "vsync-estimate": "^0.2.0"
   },
   "devDependencies": {
-    "jspsych-builder": "1.4.2"
+    "jspsych-builder": "2.1.0"
   },
   "browserslist": [
     "last 2 versions",
