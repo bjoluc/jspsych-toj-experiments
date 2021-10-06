@@ -1,6 +1,6 @@
 "use strict";
 
-const randomInt = require("random-int");
+import randomInt from "random-int";
 
 /**
  * Represents a quadrant (numbered like in a cartesian coordinate system, but starting with 0)
