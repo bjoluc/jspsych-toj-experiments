@@ -104,8 +104,8 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export async function run({ initOptions }) {
-  const jsPsych = initJsPsych(initOptions);
+export async function run() {
+  const jsPsych = initJsPsych();
   const timeline = [];
 
   const touchAdapterSpace = new TouchAdapter("space");

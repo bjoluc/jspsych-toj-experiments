@@ -14,6 +14,7 @@ import "../styles/main.scss";
 
 import { initJsPsych } from "jspsych";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
 
 import TojPlugin from "./plugins/TojPlugin";
 import DualNegationTojPlugin from "./plugins/DualNegationTojPlugin";
@@ -149,9 +150,9 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export async function run({ initOptions }) {
-  const jsPsych = initJsPsych(initOptions);
-  const timeline = [];
+export async function run({ assetPaths }) {
+  const jsPsych = initJsPsych();
+  const timeline = [{ type: PreloadPlugin, audio: assetPaths.audio }];
 
   const touchAdapterSpace = new TouchAdapter("space");
   const bindSpaceTouchAdapterToWindow = async () => {
@@ -163,7 +164,7 @@ export async function run({ initOptions }) {
   };
 
   const globalProps = addIntroduction(jsPsych, timeline, {
-    skip: true,
+    skip: false,
     experimentName: "Color TOJ Negation 3",
     instructions: {
       en: `

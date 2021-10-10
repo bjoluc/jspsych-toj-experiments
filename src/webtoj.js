@@ -17,9 +17,8 @@ import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 import TojPlugin from "./plugins/TojPlugin";
 import ImageTojPlugin from "./plugins/ImageTojPlugin";
 
-export async function run({ initOptions }) {
-  const jsPsych = initJsPsych(initOptions);
-
+export async function run() {
+  const jsPsych = initJsPsych();
   const timeline = [];
 
   // Welcome screen

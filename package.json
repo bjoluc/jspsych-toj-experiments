@@ -10,12 +10,12 @@
     "@jspsych/plugin-fullscreen": "^1.0.0",
     "@jspsych/plugin-html-button-response": "^1.0.0",
     "@jspsych/plugin-html-keyboard-response": "^1.0.0",
+    "@jspsych/plugin-preload": "^1.0.0",
     "@jspsych/plugin-survey-multi-choice": "^1.0.0",
     "@jspsych/plugin-survey-text": "^1.0.0",
     "d3-color": "^3.0.1",
     "delay": "5.0.0",
     "howler": "^2.2.3",
-    "jspsych": "^7.0.0",
     "lodash": "4.17.21",
     "marked": "^3.0.7",
     "nanoid": "3.1.29",
@@ -23,7 +23,7 @@
     "vsync-estimate": "^0.2.0"
   },
   "devDependencies": {
-    "jspsych-builder": "3.0.0"
+    "jspsych-builder": "^4.0.1"
   },
   "author": "bjoluc <mail@bjoluc.de>",
   "license": "MIT",

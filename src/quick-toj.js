@@ -12,9 +12,10 @@ import "../styles/main.scss";
 
 import { initJsPsych } from "jspsych";
 
-import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
-import SurveyTextPlugin from "@jspsych/plugin-survey-text";
 import FullscreenPlugin from "@jspsych/plugin-fullscreen";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
+import SurveyTextPlugin from "@jspsych/plugin-survey-text";
 
 import ImageTojPlugin from "./plugins/ImageTojPlugin";
 import TojPlugin from "./plugins/TojPlugin";
@@ -142,9 +143,9 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export async function run({ initOptions }) {
-  const jsPsych = initJsPsych(initOptions);
-  const timeline = [];
+export async function run({ assetPaths }) {
+  const jsPsych = initJsPsych();
+  const timeline = [{ type: PreloadPlugin, images: assetPaths.images }];
 
   const touchAdapterSpace = new TouchAdapter("space");
   const bindSpaceTouchAdapterToWindow = async () => {
