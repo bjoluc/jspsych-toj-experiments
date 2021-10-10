@@ -1,57 +1,73 @@
 import { TojPlugin } from "./jspsych-toj";
 
-// async function support
-import "core-js/stable";
-import "regenerator-runtime/runtime";
+import { ParameterType } from "jspsych";
 
-export class TojImagePlugin extends TojPlugin {
-  constructor() {
-    super();
-    this.info = {
-      name: "toj-image",
-      parameters: Object.assign({}, this.info.parameters, {
-        probe_image: {
-          type: jsPsych.plugins.parameterType.IMAGE,
-          pretty_name: "TOJ Probe image",
-          default: undefined,
-          description: "The image to be used as the TOJ probe",
-        },
-        reference_image: {
-          type: jsPsych.plugins.parameterType.IMAGE,
-          pretty_name: "TOJ Reference image",
-          default: undefined,
-          description: "The image to be used as the TOJ reference",
-        },
-        probe_properties: {
-          type: jsPsych.plugins.parameterType.OBJECT,
-          pretty_name: "Probe image properties",
-          default: {},
-          description:
-            "(optional) An object containing optional image properties. Allowed property keys are: `height`, `width`, `x`, `y`, and `css`.",
-        },
-        reference_properties: {
-          type: jsPsych.plugins.parameterType.OBJECT,
-          pretty_name: "Reference image properties",
-          default: {},
-          description:
-            "(optional) An object containing optional image properties. Allowed property keys are: `height`, `width`, `x`, `y`, and `css`.",
-        },
-        hide_stimuli: {
-          type: jsPsych.plugins.parameterType.BOOLEAN,
-          pretty_name: "Hide stimuli",
-          default: true,
-          description:
-            "(optional) Whether stimulus images (probe and reference) will be hidden initially. " +
-            "This may depend on the modification function (e.g. showing stimuli vs. flashing stimuli).",
-        },
-      }),
-    };
+/**
+ * An image extension to the jsPsych TojPlugin
+ *
+ * @author bjoluc <mail@bjoluc.de>
+ * @version 2.0.0
+ * @license MIT
+ */
+export class ImageTojPlugin extends TojPlugin {
+  static info = {
+    name: "toj-image",
+    parameters: {
+      // Delete `probe_element` and `reference_element` parameters (they are set by this plugin):
+      ...(({ probe_element, reference_element, ...parameters }) => parameters)(
+        TojPlugin.info.parameters
+      ),
+      /**
+       * The image to be used as the TOJ probe
+       */
+      probe_image: {
+        type: ParameterType.IMAGE,
+        pretty_name: "TOJ Probe image",
+        default: undefined,
+      },
+      /**
+       * The image to be used as the TOJ reference
+       */
+      reference_image: {
+        type: ParameterType.IMAGE,
+        pretty_name: "TOJ Reference image",
+        default: undefined,
+      },
+      /**
+       * [optional] An object containing optional image properties. Allowed property keys are:
+       * `height`, `width`, `x`, `y`, and `css`.
+       */
+      probe_properties: {
+        type: ParameterType.OBJECT,
+        pretty_name: "Probe image properties",
+        default: {},
+      },
+      /**
+       * [optional] An object containing optional image properties. Allowed property keys are:
+       * `height`, `width`, `x`, `y`, and `css`.
+       */
+      reference_properties: {
+        type: ParameterType.OBJECT,
+        pretty_name: "Reference image properties",
+        default: {},
+      },
+      /**
+       * [optional] Whether stimulus images (probe and reference) will be hidden initially. This may
+       * depend on the modification function (e.g. showing stimuli vs. flashing stimuli).
+       */
+      hide_stimuli: {
+        type: ParameterType.BOOLEAN,
+        pretty_name: "Hide stimuli",
+        default: true,
+      },
+    },
+  };
 
-    // Delete `probe_element` and `reference_element` from the parameters – they are set by this
-    // plugin.
-    delete this.info.parameters.probe_element;
-    delete this.info.parameters.reference_element;
-  }
+  /**
+   * The ImageTojPlugin instance of the current trial (if a trial is currently running)
+   * @type {ImageTojPlugin|null}
+   */
+  static current = null;
 
   /**
    * Creates an image element with the specified properties.
@@ -106,20 +122,23 @@ export class TojImagePlugin extends TojPlugin {
    * @returns {Element} The DOM image element
    */
   addBackgroundImage(imageSrc, imageProperties) {
-    const image = TojImagePlugin.createImageElement(imageSrc, "toj-background", imageProperties);
-    this.container.appendChild(image);
+    const image = ImageTojPlugin.createImageElement(imageSrc, "toj-background", imageProperties);
+    this.appendElement(image);
     return image;
   }
 
-  async trial(display_element, trial) {
+  async trial(display_element, trial, on_load) {
+    ImageTojPlugin.current = this;
+    this._appendContainerToDisplayElement(display_element, trial);
+
     // Create stimulus image elements
-    trial.probe_element = TojImagePlugin.createImageElement(
+    trial.probe_element = ImageTojPlugin.createImageElement(
       trial.probe_image,
       "toj-probe",
       trial.probe_properties,
       trial.hide_stimuli
     );
-    trial.reference_element = TojImagePlugin.createImageElement(
+    trial.reference_element = ImageTojPlugin.createImageElement(
       trial.reference_image,
       "toj-reference",
       trial.reference_properties,
@@ -130,10 +149,11 @@ export class TojImagePlugin extends TojPlugin {
     this.appendElement(trial.probe_element);
     this.appendElement(trial.reference_element);
 
-    await super.trial(display_element, trial);
+    on_load();
+
+    await super.trial(display_element, trial, on_load, false);
+    ImageTojPlugin.current = null;
   }
 }
 
-const instance = new TojImagePlugin();
-jsPsych.plugins["toj-image"] = instance;
-export default instance;
+export default ImageTojPlugin;

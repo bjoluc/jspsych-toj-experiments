@@ -1,109 +1,115 @@
-/**
- * A jsPsych plugin for temporal order judgement tasks
- *
- * @author bjoluc
- * @version 1.0.0
- * @license MIT
- */
-
 "use strict";
 
 import delay from "delay";
 import { playAudio } from "../util/audio";
 
+import { JsPsych, ParameterType } from "jspsych";
+import { omit } from "lodash";
+
+/**
+ * A jsPsych plugin for temporal order judgement tasks
+ *
+ * @author bjoluc <mail@bjoluc.de>
+ * @version 2.0.0
+ * @license MIT
+ */
 export class TojPlugin {
-  info = {
+  static info = {
     name: "toj-base",
     parameters: {
+      /**
+       * The DOM element acting as the probe stimulus. It is appended as a child to the plugin's
+       * container.
+       */
       probe_element: {
-        type: jsPsych.plugins.parameterType.OBJECT,
+        type: ParameterType.OBJECT,
         pretty_name: "Probe element",
         default: null,
-        description:
-          "The DOM element acting as the probe stimulus. It is appended as a child to the plugin's container.",
       },
+      /**
+       * The DOM element acting as the reference stimulus. It is appended as a child to the plugin's
+       * container.
+       */
       reference_element: {
-        type: jsPsych.plugins.parameterType.OBJECT,
+        type: ParameterType.OBJECT,
         pretty_name: "Reference element",
         default: null,
-        description:
-          "The DOM element acting as the reference stimulus. It is appended as a child to the plugin's container.",
       },
+      /**
+       * [optional] A (possibly asynchronous) function that takes a DOM element and modifies it in a
+       * visible way (e.g. by showing, hiding, or flashing it). The function is executed once with
+       * the probe element and once with the reference element as a parameter, where the succession
+       * is determined by the trial's `SOA` parameter. Defaults to `TojPlugin.showElement`.
+       */
       modification_function: {
-        type: jsPsych.plugins.parameterType.FUNCTION,
+        type: ParameterType.FUNCTION,
         pretty_name: "Modification function",
         default: TojPlugin.showElement,
-        description:
-          "(optional) A (possibly asynchronous) function that takes a DOM element and modifies it in a " +
-          "visible way (e.g. by showing, hiding, or flashing it). The function is executed once " +
-          "with the probe element and once with the reference element as a parameter, where " +
-          "the succession is determined by the trial's `SOA` parameter. Defaults to `TojPlugin.showElement`.",
       },
+      /**
+       * [optional] The length of the time before the stimulus element modification is started
+       */
       fixation_time: {
-        type: jsPsych.plugins.parameterType.INT,
+        type: ParameterType.INT,
         pretty_name: "Fixation time",
         default: 800,
-        description:
-          "(optional) The length of the time before the stimulus element modification is started",
       },
+      /**
+       * The Stimulus Onset Asynchrony for the plugin's trial
+       */
       soa: {
-        type: jsPsych.plugins.parameterType.INT,
+        type: ParameterType.INT,
         pretty_name: "Stimulus onset asynchrony (SOA)",
         default: undefined,
-        description: "The Stimulus Onset Asynchrony for the plugin's trial",
       },
+      /**
+       * The key that the subject uses to give a 'probe first' response
+       */
       probe_key: {
-        type: jsPsych.plugins.parameterType.KEYCODE,
+        type: ParameterType.KEYCODE,
         pretty_name: "Probe key",
         default: undefined,
-        description: "The key that the subject uses to give a 'probe first' response",
       },
+      /**
+       * The key that the subject uses to give a 'reference first' response
+       */
       reference_key: {
-        type: jsPsych.plugins.parameterType.KEYCODE,
+        type: ParameterType.KEYCODE,
         pretty_name: "Reference key",
         default: undefined,
-        description: "The key that the subject uses to give a 'reference first' response",
       },
+      /**
+       * [optional] The HTML code of the fixation mark
+       */
       fixation_mark_html: {
-        type: jsPsych.plugins.parameterType.HTML_STRING,
+        type: ParameterType.HTML_STRING,
         pretty_name: "Fixation mark HTML code",
         default:
           "<img class='toj-fixation-mark absolute-position' src='media/images/common/fixmark.png'></img>",
-        description: "(optional) The HTML code of the fixation mark",
       },
+      /**
+       * [optional] Whether ot not to play a feedback sound at the end of the trial
+       */
       play_feedback: {
-        type: jsPsych.plugins.parameterType.BOOLEAN,
+        type: ParameterType.BOOLEAN,
         pretty_name: "Play feedback",
         default: false,
-        description: "(optional) Whether ot not to play a feedback sound at the end of the trial",
       },
     },
   };
 
-  constructor() {
-    this.resetContainer();
-  }
-
-  resetContainer() {
-    this.container = document.createElement("div");
-    this.container.id = "jspsych-toj-container";
-  }
-
   /**
-   * Appends a child to the plugin's container element
-   *
-   * @param {Element} element
+   * The TojPlugin instance of the current trial (if a trial is currently running)
+   * @type {TojPlugin|null}
    */
-  appendElement(element) {
-    this.container.appendChild(element);
-  }
+  static current = null;
 
   /**
    * Shows a DOM element and optionally hides it again after a specified timeout.
    *
    * @param {Element} element The DOM element to be shown
-   * @param {number} hideAfter (optional) If set, the given DOM element will be hidden again after the
-   * specified time in milliseconds has passed.
+   * @param {number} hideAfter (optional) If set, the given DOM element will be hidden again after
+   * the specified time in milliseconds has passed.
    */
   static showElement(element, hideAfter = 0) {
     element.style.visibility = "visible";
@@ -135,19 +141,6 @@ export class TojPlugin {
   }
 
   /**
-   * Like `jsPsych.pluginAPI.getKeyboardResponse`, but returns a promise instead of accepting a
-   * `callback_function`.
-   */
-  static getKeyboardResponsePromised(options) {
-    return new Promise((resolve, reject) => {
-      jsPsych.pluginAPI.getKeyboardResponse({
-        ...options,
-        callback_function: resolve,
-      });
-    });
-  }
-
-  /**
    * Given a two DOM elements, a SOA value, and a modification function, applies the modification
    * function to the elements according to the given SOA.
    *
@@ -171,14 +164,51 @@ export class TojPlugin {
     }
   }
 
-  appendContainer(display_element, trial) {
+  static __createContainer() {
+    const container = document.createElement("div");
+    container.id = "jspsych-toj-container";
+    return container;
+  }
+
+  constructor(jsPsych) {
+    /** @type {JsPsych} */
+    this.jsPsych = jsPsych;
+    this.container = TojPlugin.__createContainer();
+  }
+
+  /**
+   * Appends a child to the plugin's container element
+   *
+   * @param {HTMLElement} element
+   */
+  appendElement(element) {
+    this.container.appendChild(element);
+  }
+
+  /**
+   * Like `jsPsych.pluginAPI.getKeyboardResponse`, but returns a promise instead of accepting a
+   * `callback_function`.
+   */
+  getKeyboardResponsePromisified(options) {
+    return new Promise((resolve, reject) => {
+      this.jsPsych.pluginAPI.getKeyboardResponse({
+        ...options,
+        callback_function: resolve,
+      });
+    });
+  }
+
+  _appendContainerToDisplayElement(display_element, trial) {
     this.container.insertAdjacentHTML("beforeend", trial.fixation_mark_html);
     display_element.appendChild(this.container);
   }
 
-  async trial(display_element, trial, appendContainer = true) {
-    if (appendContainer) {
-      this.appendContainer(display_element, trial);
+  async trial(display_element, trial, on_load, standalone = true) {
+    TojPlugin.current = this;
+
+    if (standalone) {
+      this._appendContainerToDisplayElement(display_element, trial);
+      on_load();
     }
 
     await delay(trial.fixation_time);
@@ -196,7 +226,7 @@ export class TojPlugin {
       key: null,
     };
 
-    keyboardResponse = await TojPlugin.getKeyboardResponsePromised({
+    keyboardResponse = await this.getKeyboardResponsePromisified({
       valid_responses: [trial.probe_key, trial.reference_key],
       rt_method: "performance",
       persist: false,
@@ -205,12 +235,10 @@ export class TojPlugin {
 
     // Clear the screen
     display_element.innerHTML = "";
-    this.resetContainer();
 
     // Process the response
-    let responseKey = jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(keyboardResponse.key);
     let response = null;
-    switch (responseKey) {
+    switch (keyboardResponse.key) {
       case trial.probe_key:
         response = "probe";
         break;
@@ -222,22 +250,23 @@ export class TojPlugin {
     let correct =
       (trial.soa <= 0 && response == "probe") || (trial.soa >= 0 && response == "reference");
 
-    const resultData = Object.assign({}, trial, {
-      response_key: responseKey,
+    const resultData = {
+      ...omit(trial, ["type", "fixation_mark_html", "probe_element", "reference_element"]),
+      response_key: keyboardResponse.key,
       response: response,
       response_correct: correct,
       rt: keyboardResponse.rt,
-    });
+    };
 
     if (trial.play_feedback) {
       await playAudio(`media/audio/feedback/${correct ? "right" : "wrong"}.wav`);
     }
 
+    TojPlugin.current = null;
+
     // Finish trial and log data
-    jsPsych.finishTrial(resultData);
+    this.jsPsych.finishTrial(resultData);
   }
 }
 
-const instance = new TojPlugin();
-jsPsych.plugins["toj"] = instance;
-export default instance;
+export default TojPlugin;

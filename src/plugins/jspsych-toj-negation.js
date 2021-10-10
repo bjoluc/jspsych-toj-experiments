@@ -1,53 +1,61 @@
 import { TojPlugin } from "./jspsych-toj";
 import { playAudio } from "../util/audio";
 
-export class TojNegationPlugin extends TojPlugin {
-  constructor() {
-    super();
-    this.info = {
-      name: "toj-negation",
-      parameters: {
-        ...this.info.parameters,
-        instruction_filename: {
-          type: jsPsych.plugins.parameterType.STRING,
-          pretty_name: "Instruction filename",
-          default: null,
-          description: "The filename (basename only) of the property to be used in the instruction",
-        },
-        instruction_negated: {
-          type: jsPsych.plugins.parameterType.STRING,
-          pretty_name: "Instruction negated",
-          default: null,
-          description: "Whether the instruction is negated or not",
-        },
-        instruction_language: {
-          type: jsPsych.plugins.parameterType.STRING,
-          pretty_name: "Instruction language",
-          default: null,
-          description: "The language ('en' or 'de') of the instruction",
-        },
-        instruction_voice: {
-          type: jsPsych.plugins.parameterType.STRING,
-          pretty_name: "Instruction voice",
-          default: null,
-          description: "The voice of the instruction ('m' or 'f')",
-        },
-      },
-    };
-  }
+import { ParameterType } from "jspsych";
 
-  async trial(display_element, trial) {
-    this.appendContainer(display_element, trial);
+export class NegationTojPlugin extends TojPlugin {
+  static info = {
+    name: "toj-negation",
+    parameters: {
+      ...TojPlugin.info.parameters,
+      /**
+       * The filename (basename only) of the property to be used in the instruction
+       */
+      instruction_filename: {
+        type: ParameterType.STRING,
+        pretty_name: "Instruction filename",
+        default: null,
+      },
+      /**
+       * Whether the instruction is negated or not
+       */
+      instruction_negated: {
+        type: ParameterType.STRING,
+        pretty_name: "Instruction negated",
+        default: null,
+      },
+      /**
+       * The language ('en' or 'de') of the instruction
+       */
+      instruction_language: {
+        type: ParameterType.STRING,
+        pretty_name: "Instruction language",
+        default: null,
+      },
+      /**
+       * The voice of the instruction ('m' or 'f')
+       */
+      instruction_voice: {
+        type: ParameterType.STRING,
+        pretty_name: "Instruction voice",
+        default: null,
+      },
+    },
+  };
+
+  async trial(display_element, trial, on_load) {
+    TojPlugin.current = this;
+
+    this._appendContainerToDisplayElement(display_element, trial);
+    on_load();
 
     // Play instruction
     const audioBaseUrl = `media/audio/color-toj-negation/${trial.instruction_language}/${trial.instruction_voice}/`;
     await playAudio(audioBaseUrl + (trial.instruction_negated ? "not" : "now") + ".wav");
     await playAudio(audioBaseUrl + trial.instruction_filename + ".wav");
 
-    await super.trial(display_element, trial, false);
+    await super.trial(display_element, trial, on_load, false);
   }
 }
 
-const instance = new TojNegationPlugin();
-jsPsych.plugins["toj-negation"] = instance;
-export default instance;
+export default NegationTojPlugin;

@@ -1,31 +1,31 @@
 {
   "name": "jspsych-toj-experiments",
-  "version": "1.0.0",
+  "private": true,
   "description": "Browser-based TOJ experiments using jsPsych",
   "repository": {
     "type": "git",
     "url": "git://github.com/bjoluc/jspsych-toj-experiments.git"
   },
   "dependencies": {
-    "d3-color": "^2.0.0",
+    "@jspsych/plugin-fullscreen": "^1.0.0",
+    "@jspsych/plugin-html-button-response": "^1.0.0",
+    "@jspsych/plugin-html-keyboard-response": "^1.0.0",
+    "@jspsych/plugin-survey-multi-choice": "^1.0.0",
+    "@jspsych/plugin-survey-text": "^1.0.0",
+    "d3-color": "^3.0.1",
     "delay": "5.0.0",
-    "howler": "^2.2.1",
-    "jspsych": "github:jsPsych/jsPsych#v6.3.1",
+    "howler": "^2.2.3",
+    "jspsych": "^7.0.0",
     "lodash": "4.17.21",
-    "marked": "^2.0.3",
-    "nanoid": "3.1.23",
+    "marked": "^3.0.7",
+    "nanoid": "3.1.29",
     "random-int": "3.0.0",
     "vsync-estimate": "^0.2.0"
   },
   "devDependencies": {
-    "jspsych-builder": "2.1.0"
+    "jspsych-builder": "3.0.0"
   },
-  "browserslist": [
-    "last 2 versions",
-    "ie >= 9",
-    "ios >= 7"
-  ],
-  "author": "bjoluc",
+  "author": "bjoluc <mail@bjoluc.de>",
   "license": "MIT",
   "prettier": {
     "trailingComma": "es5",
