@@ -16,7 +16,7 @@ import SurveyTextPlugin from "@jspsych/plugin-survey-text";
 import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 
-import TojPlugin from "./plugins/jspsych-toj";
+import TojPlugin from "./plugins/TojPlugin";
 
 import delay from "delay";
 import sample from "lodash/sample";

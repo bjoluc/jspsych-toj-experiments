@@ -1,4 +1,4 @@
-import { TojPlugin } from "./jspsych-toj";
+import { TojPlugin } from "./TojPlugin";
 import { playAudio } from "../util/audio";
 
 import { ParameterType } from "jspsych";

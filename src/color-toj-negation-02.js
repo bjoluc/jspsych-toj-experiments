@@ -15,8 +15,8 @@ import "../styles/main.scss";
 import { initJsPsych } from "jspsych";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 
-import TojPlugin from "./plugins/jspsych-toj";
-import NegationTojPlugin from "./plugins/jspsych-toj-negation";
+import TojPlugin from "./plugins/TojPlugin";
+import NegationTojPlugin from "./plugins/NegationTojPlugin";
 
 import delay from "delay";
 import { sample } from "lodash";

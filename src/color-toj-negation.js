@@ -19,8 +19,8 @@ import delay from "delay";
 import { sample } from "lodash";
 import randomInt from "random-int";
 
-import TojPlugin from "./plugins/jspsych-toj";
-import DualNegationTojPlugin from "./plugins/jspsych-toj-negation-dual";
+import TojPlugin from "./plugins/TojPlugin";
+import DualNegationTojPlugin from "./plugins/DualNegationTojPlugin";
 
 import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";

@@ -14,8 +14,8 @@ import { initJsPsych } from "jspsych";
 import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 
-import TojPlugin from "./plugins/jspsych-toj";
-import ImageTojPlugin from "./plugins/jspsych-toj-image";
+import TojPlugin from "./plugins/TojPlugin";
+import ImageTojPlugin from "./plugins/ImageTojPlugin";
 
 export async function run({ initOptions }) {
   const jsPsych = initJsPsych(initOptions);

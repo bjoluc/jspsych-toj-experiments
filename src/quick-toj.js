@@ -16,8 +16,8 @@ import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 import SurveyTextPlugin from "@jspsych/plugin-survey-text";
 import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 
-import ImageTojPlugin from "./plugins/jspsych-toj-image";
-import TojPlugin from "./plugins/jspsych-toj";
+import ImageTojPlugin from "./plugins/ImageTojPlugin";
+import TojPlugin from "./plugins/TojPlugin";
 
 import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
