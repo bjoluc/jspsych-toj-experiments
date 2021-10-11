@@ -399,10 +399,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     conditional_function: () => {
       const participantID = globalProps.participantCode
       const participantIDHash = MD5(participantID).toString();
-      const conditionToSelect = Number.parseInt(
-                            Array.from(participantIDHash)
-                            .map((v,i) => `${v.charCodeAt(0)}`.padStart(2, '0')).join("")
-                          ) % 2 === 0
+      const conditionToSelect = participantIDHash.charCodeAt(participantIDHash.length-1)% 2 === 0
       return conditionToSelect
     },
     timeline: Array.from(timelineGenerator1(10)),
@@ -411,10 +408,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     conditional_function: () => {
       const participantID = globalProps.participantCode
       const participantIDHash = MD5(participantID).toString();
-      const conditionToSelect = Number.parseInt(
-                            Array.from(participantIDHash)
-                            .map((v,i) => `${v.charCodeAt(0)}`.padStart(2, '0')).join("")
-                          ) % 2 === 1
+      const conditionToSelect = participantIDHash.charCodeAt(participantIDHash.length-1)% 2 === 1
       return conditionToSelect
     },
     timeline: Array.from(timelineGenerator2(10)),
