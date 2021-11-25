@@ -120,6 +120,52 @@ export function addIntroduction(timeline, options) {
     choices: () => (globalProps.instructionLanguage === "en" ? ["I agree"] : ["Ich stimme zu"]),
   });
 
+  // Instructions to prepare computer
+  // Disable any color temperature changeing software / settings
+  timeline.push({
+    type: "html-button-response",
+    stimulus: () => {
+      return `<iframe class="technical-instruction" src="media/misc/technical_instructions_color_temperature_${globalProps.instructionLanguage}.html"></iframe>`;
+    },
+    choices: () => (globalProps.instructionLanguage === "en" ? ["Done"] : ["Habe ich getan"]),
+  });
+
+  // Disable dark reader
+  timeline.push({
+    type: "html-button-response",
+    stimulus: () => {
+      return `<iframe class="technical-instruction" src="media/misc/technical_instructions_dark_reader_${globalProps.instructionLanguage}.html"></iframe>`;
+    },
+    choices: () =>
+      globalProps.instructionLanguage === "en"
+        ? ["Dark mode is inactive"]
+        : ["Dark mode ist abgeschaltet"],
+  });
+
+  // Color vision test
+  timeline.push({
+    type: "html-button-response",
+    stimulus: () => {
+      return `<iframe class="technical-instruction" src="media/misc/technical_instructions_color_vision_${globalProps.instructionLanguage}.html"></iframe>`;
+    },
+    choices: () =>
+      globalProps.instructionLanguage === "en"
+        ? ["I do not have color vision deficiencies"]
+        : ["Ich habe keine Farbsehschwäche"],
+  });
+
+  // Turn on sound
+  timeline.push({
+    type: "html-button-response",
+    stimulus: () => {
+      return `<iframe class="technical-instruction" src="media/misc/technical_instructions_sound_${globalProps.instructionLanguage}.html"></iframe>`;
+    },
+    choices: () =>
+      globalProps.instructionLanguage === "en"
+        ? ["Computer sounds are enabled"]
+        : ["Der Ton ist eingeschaltet"],
+  });
+
   // Participant code announcement / input
   timeline.push({
     conditional_function: () => globalProps.isFirstParticipation,
