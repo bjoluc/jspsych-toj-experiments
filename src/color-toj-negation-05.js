@@ -4,11 +4,12 @@
  * - Includes improvements:
  * - new declaration of consent, conforming DSGVO
  * - note about color vision deficiency + linking to a self-check
+ * - instructions to turn screen into landscape mode
  * - instructions about deactivating blue light filters
  * - instructions about deactivating blue light dark mode
  * - Instructions to turn on sound and sound test (still to be done)
  * - Experiment after a pause is continued by pressing the space bar, not by pressing any key
- * @version 0.5.2-rc
+ * @version 1.0.0
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
