@@ -9,7 +9,7 @@
  * - instructions about deactivating blue light dark mode
  * - Instructions to turn on sound and sound test (still to be done)
  * - Experiment after a pause is continued by pressing the space bar, not by pressing any key
- * @version 1.0.0
+ * @version 1.1.0
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
@@ -280,6 +280,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
         condition: cond,
         sequenceLength: jsPsych.timelineVariable("sequenceLength", true),
         rank: jsPsych.timelineVariable("rank", true),
+        blockIndex: jsPsych.timelineVariable("blockIndex", true),
+        trialIndexInThisTimeline: jsPsych.timelineVariable("trialIndex", true),
+        trialIndexInThisBlock: jsPsych.timelineVariable("trialIndexInBlock", true),
       };
 
       trial.fixation_time = cond.targetPairs[0].fixationTime;
@@ -347,10 +350,19 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
         10
       );
     },
-    on_finish: () => {
+    on_finish: function (data) {
       scaler.destruct();
       touchAdapterLeft.unbindFromAll();
       touchAdapterRight.unbindFromAll();
+      if (debugmode) {
+        console.log(data);
+      }
+      if (!globalProps.isFirstParticipation) {
+        if ((data["play_feedback"] === true) & (data["trialIndexInThisBlock"] >= 9)) {
+          // do not continue after the 10th warm-up trial if participant is already familiar with the experiment
+          jsPsych.endCurrentTimeline();
+        }
+      }
     },
   };
 
@@ -369,12 +381,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   };
 
   // Tutorial
-  let trialDataTutorial = generateAlternatingSequences(factorsTutorial, repetitions, false); // generate trials with larger SOAs in tutorial
-  let trialsTutorial = trialDataTutorial.trials.slice(
-    0,
-    globalProps.isFirstParticipation && !debugmode ? 30 : 10
-  );
-  //let trialsTutorial = trials.slice(0, globalProps.isFirstParticipation && !debugmode ? 30 : 10); // or duplicate trials that are actually used
+  let trialDataTutorial = generateAlternatingSequences(factorsTutorial, 5, true); // generate trials with larger SOAs in tutorial
+  let trialsTutorial = trialDataTutorial.trials.slice(0, debugmode ? 10 : 30);
+  //let trialsTutorial = trials.slicetrials.slice(0, debugmode ? 10 : 30); // or duplicate trials that are actually used
 
   timeline.push(
     cursor_off,
@@ -382,7 +391,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       timeline: [toj],
       timeline_variables: trialsTutorial,
       play_feedback: true,
-      randomize_order: true,
     },
     cursor_on,
     {

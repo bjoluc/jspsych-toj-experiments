@@ -136,8 +136,6 @@ export function sequencesToTrials(
       );
     }
     for (let rank = 0; rank < trialSequences[i].sequenceLength; rank++) {
-      trialCount++;
-      trialIndexInBlock++;
       let sequenceLength = trialSequences[i].sequenceLength.toString();
       let neg = trialSequences[i].isInstructionNegated ? 1 : 0;
       trialSequences[i].soa = soas[neg][sequenceLength][rank].pop();
@@ -146,6 +144,8 @@ export function sequencesToTrials(
       trialSequences[i]["trialIndex"] = trialCount;
       trialSequences[i]["trialIndexInBlock"] = trialIndexInBlock;
       trials.push(copy(trialSequences[i]));
+      trialCount++;
+      trialIndexInBlock++;
     }
     /**
     // peek into next sequence. End block prematurely if block size in the next iteration is expected to be larger than the threshold
