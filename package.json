@@ -18,7 +18,7 @@
     "howler": "^2.2.3",
     "lodash": "4.17.21",
     "marked": "^3.0.7",
-    "nanoid": "3.1.29",
+    "nanoid": "3.1.31",
     "random-int": "3.0.0",
     "vsync-estimate": "^0.2.0"
   },
