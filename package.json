@@ -6,6 +6,12 @@
     "type": "git",
     "url": "git://github.com/bjoluc/jspsych-toj-experiments.git"
   },
+  "scripts": {
+    "jspsych": "jspsych -e color-toj-hue",
+    "start": "npm run jspsych -- run",
+    "build": "npm run jspsych -- build",
+    "jatos": "npm run jspsych -- build --jatos"
+  },
   "dependencies": {
     "@jspsych/plugin-fullscreen": "^1.0.0",
     "@jspsych/plugin-html-button-response": "^1.0.0",

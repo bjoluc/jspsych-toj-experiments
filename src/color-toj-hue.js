@@ -117,35 +117,35 @@ export async function run() {
     touchAdapterSpace.unbindFromElement(window);
   };
 
-  timeline.push({
-    type: SurveyTextPlugin,
-    questions: [{ prompt: "Please enter your subject number." }],
-    data: {
-      userAgent: navigator.userAgent,
-    },
-  });
+  // timeline.push({
+  //   type: SurveyTextPlugin,
+  //   questions: [{ prompt: "Please enter your subject number." }],
+  //   data: {
+  //     userAgent: navigator.userAgent,
+  //   },
+  // });
 
-  // Switch to fullscreen
-  timeline.push({
-    type: FullscreenPlugin,
-    fullscreen_mode: true,
-  });
+  // // Switch to fullscreen
+  // timeline.push({
+  //   type: FullscreenPlugin,
+  //   fullscreen_mode: true,
+  // });
 
-  // Instructions
-  timeline.push({
-    type: HtmlKeyboardResponsePlugin,
-    stimulus:
-      "<p>Sie sehen gleich ein Muster aus farbigen Strichen.<br/>" +
-      "Zwei sind etwas größer als die anderen und werden kurz blinken.<br/>" +
-      "Bitte beurteilen Sie, welcher zuerst geblinkt hat.</p>" +
-      "<p>War es der linke, drücken Sie die Taste <b>Q</b>.<br/>" +
-      "Falls der rechte zuerst geblinkt hat, drücken Sie die Taste <b>P</b>.</p>" +
-      "<p>Versuchen Sie, genau zu sein und keine Fehler zu machen. " +
-      "Wenn Sie nicht wissen, wer zuerst war, raten Sie.</p>" +
-      "<p>Press any key to start the experiment.</p>",
-    on_start: bindSpaceTouchAdapterToWindow,
-    on_finish: unbindSpaceTouchAdapterFromWindow,
-  });
+  // // Instructions
+  // timeline.push({
+  //   type: HtmlKeyboardResponsePlugin,
+  //   stimulus:
+  //     "<p>Sie sehen gleich ein Muster aus farbigen Strichen.<br/>" +
+  //     "Zwei sind etwas größer als die anderen und werden kurz blinken.<br/>" +
+  //     "Bitte beurteilen Sie, welcher zuerst geblinkt hat.</p>" +
+  //     "<p>War es der linke, drücken Sie die Taste <b>Q</b>.<br/>" +
+  //     "Falls der rechte zuerst geblinkt hat, drücken Sie die Taste <b>P</b>.</p>" +
+  //     "<p>Versuchen Sie, genau zu sein und keine Fehler zu machen. " +
+  //     "Wenn Sie nicht wissen, wer zuerst war, raten Sie.</p>" +
+  //     "<p>Press any key to start the experiment.</p>",
+  //   on_start: bindSpaceTouchAdapterToWindow,
+  //   on_finish: unbindSpaceTouchAdapterFromWindow,
+  // });
 
   // Generate trials
   const factors = {
@@ -213,9 +213,8 @@ export async function run() {
 
       trial.probe_element = probeTarget;
       trial.reference_element = referenceTarget;
-
-      touchAdapterLeft.bindToElement(probeLeft ? probeGrid : referenceGrid);
-      touchAdapterRight.bindToElement(probeLeft ? referenceGrid : probeGrid);
+      trial.probe_touch_element = probeGrid;
+      trial.reference_touch_element = referenceGrid;
 
       plugin.appendElement(probeGrid);
       plugin.appendElement(referenceGrid);
