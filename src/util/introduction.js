@@ -75,7 +75,8 @@ export function addIntroduction(timeline, options) {
       trial.data.refreshRate = Math.round(rate);
     },
     on_finish: (trial) => {
-      const responses = JSON.parse(trial.responses);
+	  const responsesJson = JSON.stringify(trial.response);
+      const responses = JSON.parse(responsesJson);
       const newProps = {
         isFirstParticipation: responses.Q0 === "Yes",
         instructionLanguage: responses.Q1 === "Deutsch" ? "de" : "en",
@@ -101,7 +102,8 @@ export function addIntroduction(timeline, options) {
           },
         ],
         on_finish: (trial) => {
-          const responses = JSON.parse(trial.responses);
+	  	  const responsesJson = JSON.stringify(trial.response);
+	      const responses = JSON.parse(responsesJson);
           const newProps = {
             participantCode: responses.Q0,
           };
