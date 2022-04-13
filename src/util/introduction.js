@@ -101,7 +101,7 @@ export function addIntroduction(timeline, options) {
           },
         ],
         on_finish: (trial) => {
-          const responses = JSON.parse(trial.responses);
+          const responses = trial.responses;
           const newProps = {
             participantCode: responses.Q0,
           };
