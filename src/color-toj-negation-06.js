@@ -482,7 +482,7 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
  
   // Questions which appear after the last block if it is the subjects third participation
   const thirdParticipationQuestions = {
-    conditional_function: () => globalProps.isThirdParticipation,
+    conditional_function: () => globalProps.isThirdParticipation === true,
     timeline: [
       {
         type: "survey-text",
