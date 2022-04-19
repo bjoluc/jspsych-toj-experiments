@@ -23,13 +23,12 @@ import "../styles/main.scss";
 // jsPsych plugins
 import "jspsych/plugins/jspsych-html-keyboard-response";
 import "jspsych/plugins/jspsych-call-function";
-import { TojPlugin } from "./plugins/jspsych-toj";
+import { TojPluginWhichFirst } from "./plugins/jspsych-toj-negation-which_first";
+import tojPlugin from "./plugins/jspsych-toj-negation-which_first";
 //old: removed imports that are not needed in neg6
 //import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
 //import "./plugins/jspsych-toj-negation-dual";
 //new: from neg02
-import tojNegationPlugin from "./plugins/jspsych-toj-negation";
-import "./plugins/jspsych-toj-negation";
 //endNew: from neg02
 
 import { generateAlternatingSequences, copy } from "./util/trialGenerator";
@@ -130,7 +129,7 @@ class ConditionGenerator {
   }
   
   static getRandomPrimaryColor() {
-    return new LabColor(sample([0, 180]));
+    return new LabColor(sample([180]));
   }
 
  
@@ -192,7 +191,7 @@ export function createTimeline() {
   
   
   const globalProps = addIntroduction(timeline, {
-    skip: false,
+    skip: true,
     //new: changed title to "Negaion 6"
     experimentName: "Color TOJ Negation 6",
     instructions: {
@@ -304,15 +303,23 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
   //new: from neg02
   // Create TOJ plugin trial object
   const toj = {
-    type: "toj-negation",
-    modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
+    type: "toj-which_first",
+    modification_function: (element) => TojPluginWhichFirst.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
     //diff to neg02: changed probe_key and reference_key lines to fit neg05 implementation
-    probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
-    reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
+    first_key: () => leftKey,
+    second_key: () => rightKey,
+    probe_key: () => "undefined",
+    reference_key: () => "undefined",
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
+    greenCalled: jsPsych.timelineVariable("GreenFact"),
     instruction_voice: () => sample(["m", "f"]),
     on_start: async (trial) => {
+      // console.log(trial.soa)
+      // console.log(trial.greenCalled ? "green called": "red called")
+      // console.log((trial.greenCalled !== trial.instruction_negated) ? "green meant": "red meant")
+      // console.log(trial.instruction_negated ? "instruction negated": "instruction not negated")
+      // console.log((trial.soa <= 0  === (trial.greenCalled != trial.instruction_negated ))? leftKey : rightKey)
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
       const cond = conditionGenerator.generateCondition(probeLeft);
       
@@ -334,6 +341,13 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
       //diff to neg02: added gridColor here instead of globally
       const gridColor = "#777777";
 
+      //trial.instruction_filename = (redInstruction
+      //  ? cond.targets.reference
+      //  : cond.targets.probe
+      //).color.toName();
+
+
+
       // Create targets and grids
       [cond.targets.probe, cond.targets.reference].map((target) => {
         const [gridElement, targetElement] = createBarStimulusGrid(
@@ -346,7 +360,7 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
           0.1,
           cond.rotation
         );
-        tojNegationPlugin.appendElement(gridElement);
+        tojPlugin.appendElement(gridElement);
         (target.isLeft ? touchAdapterLeft : touchAdapterRight).bindToElement(gridElement);
 
         setAbsolutePosition(
@@ -364,9 +378,9 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
       });
 
       // Set instruction color
-      trial.instruction_filename = (trial.instruction_negated
-        ? cond.targets.reference
-        : cond.targets.probe
+      trial.instruction_filename = (trial.greenCalled
+        ? cond.targets.probe
+        : cond.targets.reference
       ).color.toName();
     },
     on_load: async () => {
@@ -414,6 +428,9 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
 
   // Tutorial
   let trialDataTutorial = generateAlternatingSequences(factorsTutorial, 5, true); // generate trials with larger SOAs in tutorial
+
+  trialDataTutorial.trials = trialDataTutorial.trials.map(trial => ({GreenFact:randomInt(0,1) === 1, ...trial}))
+
   let trialsTutorial = trialDataTutorial.trials.slice(0, debugmode ? 10 : 30);
   //let trialsTutorial = trials.slicetrials.slice(0, debugmode ? 10 : 30); // or duplicate trials that are actually used
 
@@ -474,6 +491,7 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
 
   for (let i = 0; i < trials.length; i++) {
     let trial = trials[i];
+    trial.GreenFact = randomInt(0,1) === 1
     timelineVariablesBlock.push(trial);
 
     if (
