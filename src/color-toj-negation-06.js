@@ -191,7 +191,7 @@ export function createTimeline() {
   
   
   const globalProps = addIntroduction(timeline, {
-    skip: true,
+    skip: false,
     //new: changed title to "Negaion 6"
     experimentName: "Color TOJ Negation 6",
     instructions: {
