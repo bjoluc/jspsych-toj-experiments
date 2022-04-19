@@ -43,6 +43,7 @@ marked.setOptions({ breaks: true });
  * @returns {{
  *  instructionLanguage: "de"|"en";
  *  isFirstParticipation: boolean;
+ *  isThirdParticipation: boolean;
  *  participantCode: string;
  * }}
  */
