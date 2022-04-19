@@ -22,6 +22,7 @@ import "../styles/main.scss";
 
 // jsPsych plugins
 import "jspsych/plugins/jspsych-html-keyboard-response";
+import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-call-function";
 import { TojPluginWhichFirst } from "./plugins/jspsych-toj-negation-which_first";
 import tojPlugin from "./plugins/jspsych-toj-negation-which_first";
@@ -192,6 +193,7 @@ export function createTimeline() {
   
   const globalProps = addIntroduction(timeline, {
     skip: false,
+    askForThirdParticipation: true,
     //new: changed title to "Negaion 6"
     experimentName: "Color TOJ Negation 6",
     instructions: {
@@ -471,13 +473,107 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
       if (block < blockCount) {
         return `<h1>Pause</h1><p>You finished block ${block} of ${blockCount}.<p/><p>Press SPACE key or touch to continue.</p>`;
       } else {
-        return "<p>This part of the experiment is finished. Press any key or touch to submit the results!</p>";
+        return "<p>This part of the experiment is finished.</p><p>Press any key or touch to continue.</p>";
       }
     },
     on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   });
  
+  // Questions which appear after the last block if it is the subjects third participation
+  const thirdParticipationQuestions = {
+    conditional_function: () => globalProps.isThirdParticipation,
+    timeline: [
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [{ 
+              prompt: 
+                "<p>Do you have any guesses as to what we might be investigating and what might come out of it?</p>", 
+                required: true,
+            }];
+          } else {
+            return [{ 
+              prompt: 
+                "<p>Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?</p>", 
+                required: true,
+            }];
+          };    
+        },
+      },
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              { 
+                prompt: 
+                  "<p>Estimate: How often were negations (\"not red\" or \"not green\") mentioned in direct successive stages?</p>", 
+                  required: true,
+              },
+              {
+                prompt: 
+                  "<p>Do these negations follow a pattern?</p>", 
+                  required: true,
+              },
+            ];
+          } else {
+            return [
+              { 
+                prompt: 
+                  "<p>Schätzen Sie: Wie häufig wurden Negationen (\"nicht rot\" oder \"nicht grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
+                  required: true,
+              },
+              {
+                prompt: 
+                  "<p>Folgen die Negationen einem Muster?</p>", 
+                  required: true,
+              },
+            ];
+          };    
+        },
+      },
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              { 
+                prompt: 
+                  "<p>Estimate: How often were sentences without negation (\"now red\" or \"now green\") mentioned in direct successive stages?</p>", 
+                  required: true,
+              },
+              {
+                prompt: 
+                  "<p>Do these sentences follow a pattern?</p>", 
+                  required: true,
+              },
+            ];
+          } else {
+            return [
+              { 
+                prompt: 
+                  "<p>Schätzen Sie: Wie häufig wurden Sätze ohne Negation (\"jetzt rot\" oder \"jetzt grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
+                  required: true,
+              },
+              {
+                prompt: 
+                  "<p>Folgen diese Sätze einem Muster?</p>", 
+                  required: true,
+              },
+            ];
+          };    
+        },
+      },  
+    ],
+  };
+  
+  const finalScreen = {
+    type: "html-keyboard-response",
+    choices: jsPsych.ALL_KEYS,
+    stimulus: "<h1>Danke für Ihre Teilnahme am Experiment!</h1><p>Drücken Sie eine beliebige Taste oder berühren Sie Ihren Touchscreen um das Experiment zu beenden.</p>"
+  }
   
   let timelineVariablesBlock = [];
   let curBlockIndex = 0;
@@ -530,6 +626,9 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
     }
   }
   timeline.push(cursor_on);
+
+  timeline.push(thirdParticipationQuestions);
+  timeline.push(finalScreen);
 
   // Disable fullscreen
   timeline.push({
