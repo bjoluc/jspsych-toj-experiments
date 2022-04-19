@@ -40,7 +40,7 @@ marked.setOptions({ breaks: true });
  *
  * @returns {{
  *  instructionLanguage: "de"|"en";
- *  isFirstParticipation: boolean;,
+ *  isFirstParticipation: boolean;
  *  participantCode: string;
  * }}
  */
