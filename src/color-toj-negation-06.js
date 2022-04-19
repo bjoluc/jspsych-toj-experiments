@@ -13,7 +13,6 @@
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
  */
-//new: (above) changed title to "Negation 6"; TODO: description needs to be changed to describe neg6 instead of neg5
 
 "use strict";
 
@@ -25,11 +24,6 @@ import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-call-function";
 import { TojPluginWhichFirst } from "./plugins/jspsych-toj-negation-which_first";
 import tojPlugin from "./plugins/jspsych-toj-negation-which_first";
-//old: removed imports that are not needed in neg6
-//import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
-//import "./plugins/jspsych-toj-negation-dual";
-//new: from neg02
-//endNew: from neg02
 
 import { generateAlternatingSequences, copy } from "./util/trialGenerator";
 
@@ -42,15 +36,10 @@ import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
 import { LabColor } from "./util/colors";
-//old: removed Quadrant import because its not needed in neg6
-//import { Quadrant } from "./util/Quadrant";
 import { addIntroduction } from "./util/introduction";
-
-
 
 const soaChoices = [-6, -3, -1, 0, 1, 3, 6].map((x) => (x * 16.6667).toFixed(3));
 const soaChoicesTutorial = [-6, -3, 3, 6].map((x) => (x * 16.6667).toFixed(3));
-
 
 const debugmode = false;
 
@@ -61,20 +50,11 @@ class TojTarget {
    */
   color;
 
-  //new: from neg02
   /**
    * Whether the target is displayed on the left side of the screen
    * @type boolean
    */
   isLeft;
-  //endNew: from neg02
-  
-  //old: removed quadrant because its not needed in neg6
-  /**
-   * The quadrant in which the target is displayed
-   * @type {Quadrant}
-   */
-  //quadrant;
 
   /**
    * Whether the target serves as a probe or a reference
@@ -90,7 +70,6 @@ class TojTarget {
 }
 
 class ConditionGenerator {
-  //new: changed gridSize cause halfs instead of quadrants needed
   /**
    * The size ([x, y]) of the grid in one half
    */
@@ -127,16 +106,13 @@ class ConditionGenerator {
     this._previousPositions[identifier] = pos;
     return pos;
   }
-  
+
   static getRandomPrimaryColor() {
     return new LabColor(sample([180]));
   }
 
- 
-  //new: from neg02
   generateCondition(probeLeft) {
     const alpha = ConditionGenerator.alpha;
-    //diff to neg02: changed targets implementation to fit style of neg05
     let targets = {};
 
     // Generate a target pair
@@ -148,26 +124,20 @@ class ConditionGenerator {
     const reference = new TojTarget();
     reference.isProbe = false;
     reference.isLeft = !probeLeft;
-    //diff to neg02: changed color value to 180 cause only red and green needed
     reference.color = probe.color.getRandomRelativeColor([180]);
 
     [probe, reference].map((target) => {
       const xRange = target.isLeft ? [3, 5] : [2, 4];
       target.gridPosition = ConditionGenerator.generateRandomPos(xRange, [2, 5]);
     });
-    
-    //diff to neg02: changed targets implementation to fit style of neg05
+
     targets = { probe, reference, fixationTime: randomInt(300, 500) };
 
     return {
-      //diff to neg02: changed targets implementation to fit style of neg05
       targets,
-      //diff to neg02: removed return of fixationTime because it is handled within "targets" now
-      //fixationTime: randomInt(300, 500),
       rotation: this.generateOrientation(),
     };
   }
-  //endNew: from neg02
 }
 
 const conditionGenerator = new ConditionGenerator();
@@ -188,15 +158,12 @@ export function createTimeline() {
   const unbindSpaceTouchAdapterFromWindow = () => {
     touchAdapterSpace.unbindFromElement(window);
   };
-  
-  
+
   const globalProps = addIntroduction(timeline, {
     skip: false,
     askForThirdParticipation: true,
-    //new: changed title to "Negaion 6"
     experimentName: "Color TOJ Negation 6",
     instructions: {
-    //new: from neg02 (copied english and german instructions; edited text in first paragraph: changed colors to just red/rot and green/grün)
       en: `
 You will see a grid of bars and a point in the middle. Please try to focus the point during the whole experiment.
 Two of the bars are colored (red or green).
@@ -235,41 +202,27 @@ Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme
 Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.
 Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       `,
-      //endNew: from neg02
     },
   });
 
   // Generate trials
   const factors = {
     isInstructionNegated: [true, false],
-    //probeLeft: [true, false],
-    //new: from neg02
-    probeLeft: [true, false],
-    //endNew: from neg02
-    
     soa: soaChoices,
     sequenceLength: [1, 2, 5],
   };
   const factorsTutorial = {
     isInstructionNegated: [true, false],
-    //new: from neg02
-    probeLeft: [true, false],
-    //endNew: from neg02
-    
     soa: soaChoicesTutorial,
     sequenceLength: [1, 2, 5],
   };
   const factorsDebug = {
     isInstructionNegated: [true, false],
-    //new: from neg02
-    probeLeft: [true, false],
-    //endNew: from neg02
-    
     soa: [-6, 6].map((x) => (x * 16.6667).toFixed(3)),
     sequenceLength: [1, 2],
   };
   const repetitions = 1;
-  
+
   const blocksize = 40;
   const probeLeftIsFactor = true; // if true, it adds an implicit repetition
   const alwaysStayUnderBlockSize = false;
@@ -284,7 +237,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   if (debugmode) {
     trialData = generateAlternatingSequences(factorsDebug, 1, false, 1, false);
   }
- 
+
   let trials = trialData.trials;
   let blockCount = trialData.blockCount;
 
@@ -296,14 +249,12 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   );
 
   let scaler; // Will store the Scaler object for the TOJ plugin
-  
-  //new: from neg02
+
   // Create TOJ plugin trial object
   const toj = {
     type: "toj-which_first",
     modification_function: (element) => TojPluginWhichFirst.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
-    //diff to neg02: changed probe_key and reference_key lines to fit neg05 implementation
     first_key: () => leftKey,
     second_key: () => rightKey,
     probe_key: () => "undefined",
@@ -319,8 +270,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       // console.log((trial.soa <= 0  === (trial.greenCalled != trial.instruction_negated ))? leftKey : rightKey)
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
       const cond = conditionGenerator.generateCondition(probeLeft);
-      
-      //diff to neg02: added sequenceLength, rank, blockIndex, trialIndexInThisTimeline, trialIndexInThisBlock to fit neg05 implementation
+
       // Log probeLeft and condition
       trial.data = {
         probeLeft,
@@ -334,8 +284,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
 
       trial.fixation_time = cond.fixationTime;
       trial.instruction_language = globalProps.instructionLanguage;
-      
-      //diff to neg02: added gridColor here instead of globally
+
       const gridColor = "#777777";
 
       //trial.instruction_filename = (redInstruction
@@ -375,9 +324,8 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       });
 
       // Set instruction color
-      trial.instruction_filename = (trial.greenCalled
-        ? cond.targets.probe
-        : cond.targets.reference
+      trial.instruction_filename = (
+        trial.instruction_negated ? cond.targets.reference : cond.targets.probe
       ).color.toName();
     },
     on_load: async () => {
@@ -389,12 +337,11 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
         10
       );
     },
-    //diff to neg02: added optional debugmode and warm-up stopping from neg05
     on_finish: function (data) {
       scaler.destruct();
       touchAdapterLeft.unbindFromAll();
       touchAdapterRight.unbindFromAll();
-      
+
       if (debugmode) {
         console.log(data);
       }
@@ -406,7 +353,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       }
     },
   };
-  //endNew: fromneg02
 
   const cursor_off = {
     type: "call-function",
@@ -421,7 +367,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       document.body.style.cursor = "auto";
     },
   };
-  
 
   // Tutorial
   let trialDataTutorial = generateAlternatingSequences(factorsTutorial, 5, true); // generate trials with larger SOAs in tutorial
@@ -448,13 +393,12 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     }
   );
 
-  
   // The trials array contains too many items for a block, so we divide the conditions into two
   // blocks. BUT: We cannot easily alternate between the first half and the second half of the
   // trials array in the `experimentTojTimeline` because the timeline_variables property does not
   // take a function. Hence, we manually create all timeline entries instead of using nested
   // timelines. :|
-  
+
   const makeBlockFinishedScreenTrial = (block, blockCount) => ({
     type: "html-keyboard-response",
     choices: () => {
