@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation 2
  * @description Experiment on negation in TVA instructions, single-target-pair version
- * @version 2.0.1
+ * @version 3.0.0
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -12,10 +12,12 @@
 
 import "../styles/main.scss";
 
-import "jspsych/plugins/jspsych-html-keyboard-response";
-import { TojPlugin } from "./plugins/jspsych-toj";
-import tojNegationPlugin from "./plugins/jspsych-toj-negation";
-import "./plugins/jspsych-toj-negation";
+import { initJsPsych } from "jspsych";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
+
+import TojPlugin from "./plugins/TojPlugin";
+import NegationTojPlugin from "./plugins/NegationTojPlugin";
 
 import delay from "delay";
 import { sample } from "lodash";
@@ -127,12 +129,11 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline() {
-  let timeline = [];
+export async function run({ assetPaths }) {
+  const jsPsych = initJsPsych();
+  const timeline = [{ type: PreloadPlugin, audio: assetPaths.audio }];
 
-  const touchAdapterSpace = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
-  );
+  const touchAdapterSpace = new TouchAdapter("space");
   const bindSpaceTouchAdapterToWindow = async () => {
     await delay(500); // Prevent touch event from previous touch
     touchAdapterSpace.bindToElement(window);
@@ -141,7 +142,7 @@ export function createTimeline() {
     touchAdapterSpace.unbindFromElement(window);
   };
 
-  const globalProps = addIntroduction(timeline, {
+  const globalProps = addIntroduction(jsPsych, timeline, {
     skip: false,
     experimentName: "Color TOJ Negation 02",
     instructions: {
@@ -199,39 +200,46 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
   const repetitions = 1;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
 
-  const touchAdapterLeft = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(leftKey)
-  );
-  const touchAdapterRight = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(rightKey)
-  );
+  const touchAdapterLeft = new TouchAdapter(leftKey);
+  const touchAdapterRight = new TouchAdapter(rightKey);
 
   let scaler; // Will store the Scaler object for the TOJ plugin
 
   // Create TOJ plugin trial object
   const toj = {
-    type: "toj-negation",
+    type: NegationTojPlugin,
     modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
     probe_key: leftKey,
     reference_key: rightKey,
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
     instruction_voice: () => sample(["m", "f"]),
-    on_start: async (trial) => {
-      const isProbeLeft = jsPsych.timelineVariable("isProbeLeft", true);
-      const cond = conditionGenerator.generateCondition(isProbeLeft);
+    on_start: (trial) => {
+      const isProbeLeft = jsPsych.timelineVariable("isProbeLeft");
+      const condition = conditionGenerator.generateCondition(isProbeLeft);
 
       // Log probeLeft and condition
       trial.data = {
         isProbeLeft,
-        condition: cond,
+        condition,
       };
 
-      trial.fixation_time = cond.fixationTime;
+      trial.fixation_time = condition.fixationTime;
       trial.instruction_language = globalProps.instructionLanguage;
 
+      // Set instruction color
+      trial.instruction_filename = (
+        trial.instruction_negated ? condition.targets.reference : condition.targets.probe
+      ).color.toName();
+    },
+    on_load: () => {
+      const trial = jsPsych.getCurrentTrial();
+      const { condition } = trial.data;
+
+      const plugin = TojPlugin.current;
+
       // Create targets and grids
-      [cond.targets.probe, cond.targets.reference].map((target) => {
+      [condition.targets.probe, condition.targets.reference].map((target) => {
         const [gridElement, targetElement] = createBarStimulusGrid(
           ConditionGenerator.gridSize,
           target.gridPosition,
@@ -240,9 +248,9 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
           1,
           0.7,
           0.1,
-          cond.rotation
+          condition.rotation
         );
-        tojNegationPlugin.appendElement(gridElement);
+        plugin.appendElement(gridElement);
         (target.isLeft ? touchAdapterLeft : touchAdapterRight).bindToElement(gridElement);
 
         setAbsolutePosition(
@@ -259,16 +267,9 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
         }
       });
 
-      // Set instruction color
-      trial.instruction_filename = (trial.instruction_negated
-        ? cond.targets.reference
-        : cond.targets.probe
-      ).color.toName();
-    },
-    on_load: async () => {
       // Fit to window size
       scaler = new Scaler(
-        document.getElementById("jspsych-toj-container"),
+        plugin.container,
         ConditionGenerator.gridSize[0] * 40 * 2,
         ConditionGenerator.gridSize[1] * 40,
         10
@@ -290,7 +291,7 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
       randomize_order: true,
     },
     {
-      type: "html-keyboard-response",
+      type: HtmlKeyboardResponsePlugin,
       stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
       on_start: bindSpaceTouchAdapterToWindow,
       on_finish: unbindSpaceTouchAdapterFromWindow,
@@ -304,7 +305,7 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
   // timelines. :|
 
   const makeBlockFinishedScreenTrial = (block, blockCount) => ({
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus: () => {
       if (block < blockCount) {
         return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
@@ -339,5 +340,6 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
     timeline: Array.from(timelineGenerator(10)),
   });
 
-  return timeline;
+  await jsPsych.run(timeline);
+  return jsPsych;
 }

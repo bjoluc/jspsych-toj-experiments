@@ -9,7 +9,7 @@ export function copy(object) {
   return out;
 }
 
-function generateSequencesAlternating(factors, repetitions = 1, probeLeftIsFactor = false) {
+function generateSequencesAlternating(jsPsych, factors, repetitions = 1, probeLeftIsFactor = false) {
   let factorsCopy = copy(factors);
 
   const asserted = 0;
@@ -65,7 +65,8 @@ function generateSequencesAlternating(factors, repetitions = 1, probeLeftIsFacto
  * @param {*} alwaysStayUnderBlockSize
  * @returns
  */
-export function sequencesToTrials(
+export function sequencesToTrials (
+  jsPsych,
   trialSequences,
   factors,
   blocksize = 40,
@@ -84,7 +85,8 @@ export function sequencesToTrials(
    * - rank (i.e. position of the trial within the sequence)
    */
 
-  const cloneArrayAndShuffle = function (
+   function cloneArrayAndShuffle(
+    jsPsych,
     source,
     count,
     repetitions = 1,
@@ -111,12 +113,14 @@ export function sequencesToTrials(
     // for each uatterance, sequence length and rank: add a list of shuffled soas
     let sequenceLength = factors.sequenceLength[i].toString();
     soas[asserted][sequenceLength] = cloneArrayAndShuffle(
+      jsPsych,
       factors.soa,
       sequenceLength,
       repetitions,
       probeLeftIsFactor
     );
     soas[negated][sequenceLength] = cloneArrayAndShuffle(
+      jsPsych,
       factors.soa,
       sequenceLength,
       repetitions,
@@ -169,15 +173,17 @@ export function sequencesToTrials(
 }
 
 export function generateAlternatingSequences(
+  jsPsych,
   factors,
   repetitions,
   probeLeftIsFactor,
   blocksize,
   alwaysStayUnderBlockSize
 ) {
-  let trialSequences = generateSequencesAlternating(factors, repetitions, probeLeftIsFactor);
+  let trialSequences = generateSequencesAlternating(jsPsych, factors, repetitions, probeLeftIsFactor);
 
   return sequencesToTrials(
+    jsPsych,
     trialSequences,
     factors,
     blocksize,

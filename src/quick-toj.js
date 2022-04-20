@@ -10,13 +10,15 @@
 
 import "../styles/main.scss";
 
-// jsPsych plugins
-import "jspsych/plugins/jspsych-html-keyboard-response";
-import "jspsych/plugins/jspsych-survey-text";
-import "jspsych/plugins/jspsych-fullscreen";
+import { initJsPsych } from "jspsych";
 
-import tojImagePlugin from "./plugins/jspsych-toj-image";
-import { TojPlugin } from "./plugins/jspsych-toj";
+import FullscreenPlugin from "@jspsych/plugin-fullscreen";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
+import SurveyTextPlugin from "@jspsych/plugin-survey-text";
+
+import ImageTojPlugin from "./plugins/ImageTojPlugin";
+import TojPlugin from "./plugins/TojPlugin";
 
 import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
@@ -141,12 +143,11 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline() {
-  let timeline = [];
+export async function run({ assetPaths }) {
+  const jsPsych = initJsPsych();
+  const timeline = [{ type: PreloadPlugin, images: assetPaths.images }];
 
-  const touchAdapterSpace = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
-  );
+  const touchAdapterSpace = new TouchAdapter("space");
   const bindSpaceTouchAdapterToWindow = async () => {
     await delay(500); // Prevent touch event from previous touch
     touchAdapterSpace.bindToElement(window);
@@ -157,7 +158,7 @@ export function createTimeline() {
 
   // Welcome screen
   timeline.push({
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus:
       "<p><img src='media/images/quick-toj/logo.png' style='max-width: 100vh;'></img><p/>" +
       "<p>Thank you for taking the time to participate in QuickTOJ Web!<p/>" +
@@ -167,7 +168,7 @@ export function createTimeline() {
   });
 
   timeline.push({
-    type: "survey-text",
+    type: SurveyTextPlugin,
     questions: [{ prompt: "Please enter your subject number." }],
     data: {
       userAgent: navigator.userAgent,
@@ -176,13 +177,13 @@ export function createTimeline() {
 
   // Switch to fullscreen
   timeline.push({
-    type: "fullscreen",
+    type: FullscreenPlugin,
     fullscreen_mode: true,
   });
 
   // Instructions
   timeline.push({
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus:
       "<p>Sie sehen gleich ein Muster aus grauen Strichen.<br/>" +
       "Zwei sind etwas dunkler grau und werden kurz blinken.<br/>" +
@@ -210,18 +211,14 @@ export function createTimeline() {
     trials[index] = Object.assign({}, trial, condition);
   });
 
-  const touchAdapterLeft = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(leftKey)
-  );
-  const touchAdapterRight = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(rightKey)
-  );
+  const touchAdapterLeft = new TouchAdapter(leftKey);
+  const touchAdapterRight = new TouchAdapter(rightKey);
 
   let scaler; // Will store the Scaler object for the TOJ plugin
 
   // Create TOJ plugin trial object
   const toj = {
-    type: "toj-image",
+    type: ImageTojPlugin,
     modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     hide_stimuli: false,
     probe_image: jsPsych.timelineVariable("probeImage"),
@@ -230,28 +227,32 @@ export function createTimeline() {
     soa: jsPsych.timelineVariable("soa"),
     probe_properties: jsPsych.timelineVariable("probeImageProperties"),
     reference_properties: jsPsych.timelineVariable("refImageProperties"),
-    probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
-    reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
+    probe_key: () => (jsPsych.timelineVariable("probeLeft") ? leftKey : rightKey),
+    reference_key: () => (jsPsych.timelineVariable("probeLeft") ? rightKey : leftKey),
     on_load: () => {
-      const bgImageLeft = tojImagePlugin.addBackgroundImage(
-        jsPsych.timelineVariable("bgImageLeft", true),
-        jsPsych.timelineVariable("bgImageLeftProperties", true)
+      const plugin = ImageTojPlugin.current;
+
+      const bgImageLeft = plugin.addBackgroundImage(
+        jsPsych.timelineVariable("bgImageLeft"),
+        jsPsych.timelineVariable("bgImageLeftProperties")
       );
       touchAdapterLeft.bindToElement(bgImageLeft);
       touchAdapterLeft.bindByClass(
-        jsPsych.timelineVariable("probeLeft", true) ? "toj-probe" : "toj-reference"
+        jsPsych.timelineVariable("probeLeft") ? "toj-probe" : "toj-reference"
       );
-      const bgImageRight = tojImagePlugin.addBackgroundImage(
-        jsPsych.timelineVariable("bgImageRight", true),
-        jsPsych.timelineVariable("bgImageRightProperties", true)
+
+      const bgImageRight = plugin.addBackgroundImage(
+        jsPsych.timelineVariable("bgImageRight"),
+        jsPsych.timelineVariable("bgImageRightProperties")
       );
       touchAdapterRight.bindToElement(bgImageRight);
       touchAdapterRight.bindByClass(
-        jsPsych.timelineVariable("probeLeft", true) ? "toj-reference" : "toj-probe"
+        jsPsych.timelineVariable("probeLeft") ? "toj-reference" : "toj-probe"
       );
+
       // Fit to window size
       scaler = new Scaler(
-        document.getElementById("jspsych-toj-container"),
+        plugin.container,
         ConditionGenerator.fieldWidth * 2,
         ConditionGenerator.fieldWidth,
         10
@@ -287,17 +288,17 @@ export function createTimeline() {
   };
 
   const tutorialFinishedScreen = {
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
     on_load: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   };
 
   const blockFinishedScreen = {
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus: () => {
-      const block = jsPsych.timelineVariable("block", true);
-      const blockCount = jsPsych.timelineVariable("blockCount", true);
+      const block = jsPsych.timelineVariable("block");
+      const blockCount = jsPsych.timelineVariable("blockCount");
       if (block < blockCount) {
         return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
       } else {
@@ -317,11 +318,6 @@ export function createTimeline() {
     timeline_variables: Array.from(blockGenerator(5)),
   });
 
-  return timeline;
-}
-
-function* pathGenerator(prefix, fromNumber, toNumber, suffix) {
-  for (let i = fromNumber; i <= toNumber; i++) {
-    yield prefix + i + suffix;
-  }
+  await jsPsych.run(timeline);
+  return jsPsych;
 }

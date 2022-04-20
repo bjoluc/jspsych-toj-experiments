@@ -1,5 +1,5 @@
 import randomInt from "random-int";
-export function partialRandomizePartialRandomizeSequencewise(factors,repetitions, patternList,randomizedSequenceWise, values){
+export function partialRandomizePartialRandomizeSequencewise(jsPsych, factors,repetitions, patternList,randomizedSequenceWise, values){
   delete factors[randomizedSequenceWise]
   let trials = jsPsych.randomization.factorial(factors, repetitions);
 
@@ -25,7 +25,7 @@ export function partialRandomizePartialRandomizeSequencewise(factors,repetitions
   }
   return trials
 }
-export function exactPartialRandomizePartialRandomizeSequencewise(factors,repetitions, patternList,randomizedSequenceWise, values, lastValue = null){
+export function exactPartialRandomizePartialRandomizeSequencewise(jsPsych, factors,repetitions, patternList,randomizedSequenceWise, values, lastValue = null){
   delete factors[randomizedSequenceWise]
   let trials = jsPsych.randomization.factorial(factors, repetitions);
 

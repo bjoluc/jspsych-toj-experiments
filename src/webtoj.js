@@ -1,7 +1,7 @@
 /**
  * @title Web TOJ
  * @description Example TOJ Experiment
- * @version 1.0.0
+ * @version 2.0.0
  *
  * @imageDir images/common,images/webtoj
  */
@@ -10,18 +10,20 @@
 
 import "../styles/main.scss";
 
-import "jspsych/plugins/jspsych-html-keyboard-response";
-import "jspsych/plugins/jspsych-fullscreen";
+import { initJsPsych } from "jspsych";
+import FullscreenPlugin from "@jspsych/plugin-fullscreen";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 
-import "./plugins/jspsych-toj-image";
-import { TojPlugin } from "./plugins/jspsych-toj";
+import TojPlugin from "./plugins/TojPlugin";
+import ImageTojPlugin from "./plugins/ImageTojPlugin";
 
-export function createTimeline() {
-  let timeline = [];
+export async function run() {
+  const jsPsych = initJsPsych();
+  const timeline = [];
 
   // Welcome screen
   timeline.push({
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus:
       "<p>Thank you for taking the time to participate in WebTOJ!<p/>" +
       "<p>Press any key to begin.</p>",
@@ -29,29 +31,29 @@ export function createTimeline() {
 
   // Switch to fullscreen
   timeline.push({
-    type: "fullscreen",
+    type: FullscreenPlugin,
     fullscreen_mode: true,
   });
 
   // Instructions
   timeline.push({
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus:
       "<p>Some handy instruction text.</p>" + "<p>Press any key to start the experiment.</p>",
   });
 
   // Generate trials
-  let factors = {
+  const factors = {
     probe_image: ["media/images/webtoj/gray.png"],
     reference_image: ["media/images/webtoj/gray.png"],
     soa: [-10, -8, -5, -3, -2, -1, 0, 1, 2, 3, 5, 8, 10].map((x) => x * 10),
   };
-  let repetitions = 2;
-  let trials = jsPsych.randomization.factorial(factors, repetitions);
+  const repetitions = 1;
+  const trials = jsPsych.randomization.factorial(factors, repetitions);
 
   // Create toj-image trial object
-  let toj = {
-    type: "toj-image",
+  const toj = {
+    type: ImageTojPlugin,
     hide_stimuli: false,
     modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     probe_image: jsPsych.timelineVariable("probe_image"),
@@ -76,5 +78,6 @@ export function createTimeline() {
     timeline_variables: trials,
   });
 
-  return timeline;
+  await jsPsych.run(timeline);
+  return jsPsych;
 }

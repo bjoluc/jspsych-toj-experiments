@@ -13,10 +13,12 @@
 import "../styles/main.scss";
 
 // jsPsych plugins
-import "jspsych/plugins/jspsych-html-keyboard-response";
-import { TojPlugin } from "./plugins/jspsych-toj";
-import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
-import "./plugins/jspsych-toj-negation-dual";
+import { initJsPsych } from "jspsych";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
+
+import TojPlugin from "./plugins/TojPlugin";
+import DualNegationTojPlugin from "./plugins/DualNegationTojPlugin";
 
 import delay from "delay";
 import { sample } from "lodash";
@@ -31,6 +33,7 @@ import { Quadrant } from "./util/Quadrant";
 import { addIntroduction } from "./util/introduction";
 import {exactPartialRandomizePartialRandomizeSequencewise, partialRandomizePartialRandomizeSequencewise} from './util/customRandomizer'
 import {MD5} from 'crypto-js'
+
 const soaChoices = [-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6].map((x) => x * 16.667);
 
 class TojTarget {
@@ -150,12 +153,11 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline() {
-  let timeline = [];
+export async function run({ assetPaths }) {
+  const jsPsych = initJsPsych();
+  const timeline = [{ type: PreloadPlugin, audio: assetPaths.audio }];
 
-  const touchAdapterSpace = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
-  );
+  const touchAdapterSpace = new TouchAdapter("space");
   const bindSpaceTouchAdapterToWindow = async () => {
     await delay(500); // Prevent touch event from previous touch
     touchAdapterSpace.bindToElement(window);
@@ -164,7 +166,7 @@ export function createTimeline() {
     touchAdapterSpace.unbindFromElement(window);
   };
 
-  const globalProps = addIntroduction(timeline, {
+  const globalProps = addIntroduction(jsPsych, timeline, {
     skip: false,
     experimentName: "Color TOJ Negation 3",
     instructions: {
@@ -212,23 +214,19 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     soa: soaChoices,
   };
   const repetitions = 1;
-  let trials1 = exactPartialRandomizePartialRandomizeSequencewise(factors, repetitions,[1,2,5], "isInstructionNegated",[true,false])
-  let trials2 = exactPartialRandomizePartialRandomizeSequencewise(factors, repetitions,[1,3,6], "isInstructionNegated",[true,false])
+  let trials1 = exactPartialRandomizePartialRandomizeSequencewise(jsPsych, factors, repetitions,[1,2,5], "isInstructionNegated",[true,false])
+  let trials2 = exactPartialRandomizePartialRandomizeSequencewise(jsPsych, factors, repetitions,[1,3,6], "isInstructionNegated",[true,false])
   //console.log(trials1)
   //console.log(trials2)
 
-  const touchAdapterLeft = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(leftKey)
-  );
-  const touchAdapterRight = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(rightKey)
-  );
+  const touchAdapterLeft = new TouchAdapter(leftKey);
+  const touchAdapterRight = new TouchAdapter(rightKey);
 
   let scaler; // Will store the Scaler object for the TOJ plugin
 
   // Create TOJ plugin trial object
   const toj = {
-    type: "toj-negation-dual",
+    type: DualNegationTojPlugin,
     modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
     probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
@@ -237,22 +235,36 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     instruction_voice: () => sample(["m", "f"]),
     on_start: async (trial) => {
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
-      const cond = conditionGenerator.generateCondition(probeLeft);
+      const condition = conditionGenerator.generateCondition(probeLeft);
 
       // Log probeLeft and condition
       trial.data = {
         probeLeft,
-        condition: cond,
+        condition,
       };
 
-      trial.fixation_time = cond.targetPairs[0].fixationTime;
-      trial.distractor_fixation_time = cond.targetPairs[1].fixationTime;
+      trial.fixation_time = condition.targetPairs[0].fixationTime;
+      trial.distractor_fixation_time = condition.targetPairs[1].fixationTime;
       trial.instruction_language = globalProps.instructionLanguage;
+
+      // Set instruction color
+      trial.instruction_filename = condition.targetPairs[
+        trial.instruction_negated ? 1 : 0
+      ].primary.color.toName();
+
+      // Set distractor SOA
+      trial.distractor_soa = condition.distractorSOA;
+    },
+    on_load: async () => {
+      const trial = jsPsych.getCurrentTrial();
+      const { condition } = trial.data;
+
+      const plugin = TojPlugin.current;
 
       const gridColor = "#777777";
 
       // Loop over targets, creating them and their grids in the corresponding quadrants
-      for (const targetPair of cond.targetPairs) {
+      for (const targetPair of condition.targetPairs) {
         [targetPair.primary, targetPair.secondary].map((target) => {
           const [gridElement, targetElement] = createBarStimulusGrid(
             ConditionGenerator.gridSize,
@@ -262,9 +274,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
             1,
             0.7,
             0.1,
-            cond.rotation
+            condition.rotation
           );
-          tojNegationPlugin.appendElement(gridElement);
+          plugin.appendElement(gridElement);
           (target.quadrant.isLeft() ? touchAdapterLeft : touchAdapterRight).bindToElement(
             gridElement
           );
@@ -294,18 +306,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
         });
       }
 
-      // Set instruction color
-      trial.instruction_filename = cond.targetPairs[
-        trial.instruction_negated ? 1 : 0
-      ].primary.color.toName();
-
-      // Set distractor SOA
-      trial.distractor_soa = cond.distractorSOA;
-    },
-    on_load: async () => {
       // Fit to window size
       scaler = new Scaler(
-        document.getElementById("jspsych-toj-container"),
+        plugin.container,
         ConditionGenerator.gridSize[0] * 40 * 2,
         ConditionGenerator.gridSize[1] * 40 * 2,
         10
@@ -327,7 +330,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       randomize_order: true,
     },
     {
-      type: "html-keyboard-response",
+      type: HtmlKeyboardResponsePlugin,
       stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
       on_start: bindSpaceTouchAdapterToWindow,
       on_finish: unbindSpaceTouchAdapterFromWindow,
@@ -341,7 +344,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   // timelines. :|
 
   const makeBlockFinishedScreenTrial = (block, blockCount) => ({
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus: () => {
       if (block < blockCount) {
         return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
@@ -369,7 +372,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       yield makeBlockFinishedScreenTrial(currentBlock, blockCount);
       currentBlock += 1;
       if(currentBlock % 2 === 1){
-        trials1 = exactPartialRandomizePartialRandomizeSequencewise(factors,repetitions,[1,2,5],"isInstructionNegated",[true,false],trials1[trials1.length-1].isInstructionNegated)
+        trials1 = exactPartialRandomizePartialRandomizeSequencewise(jsPsych, factors,repetitions,[1,2,5],"isInstructionNegated",[true,false],trials1[trials1.length-1].isInstructionNegated)
       }
     }
   };
@@ -389,7 +392,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       yield makeBlockFinishedScreenTrial(currentBlock, blockCount);
       currentBlock += 1;
       if(currentBlock % 2 === 1){
-        trials2 = exactPartialRandomizePartialRandomizeSequencewise(factors,repetitions,[1,3,6],"isInstructionNegated",[true,false],trials2[trials2.length-1].isInstructionNegated)
+        trials2 = exactPartialRandomizePartialRandomizeSequencewise(jsPsych, factors,repetitions,[1,3,6],"isInstructionNegated",[true,false],trials2[trials2.length-1].isInstructionNegated)
       }
     }
   };
@@ -413,6 +416,8 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     },
     timeline: Array.from(timelineGenerator2(10)),
   });
+
+  await jsPsych.run(timeline);
   console.log(timeline)
-  return timeline;
+  return jsPsych;
 }

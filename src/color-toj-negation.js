@@ -1,7 +1,7 @@
 /**
  * @title Color TOJ Negation
  * @description Experiment on negation in TVA instructions
- * @version 2.0.0
+ * @version 3.0.0
  *
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
@@ -12,14 +12,16 @@
 
 import "../styles/main.scss";
 
-import "jspsych/plugins/jspsych-html-keyboard-response";
-import { TojPlugin } from "./plugins/jspsych-toj";
-import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
-import "./plugins/jspsych-toj-negation-dual";
+import { initJsPsych } from "jspsych";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
 
 import delay from "delay";
 import { sample } from "lodash";
 import randomInt from "random-int";
+
+import TojPlugin from "./plugins/TojPlugin";
+import DualNegationTojPlugin from "./plugins/DualNegationTojPlugin";
 
 import { TouchAdapter } from "./util/TouchAdapter";
 import { Scaler } from "./util/Scaler";
@@ -165,12 +167,11 @@ const conditionGenerator = new ConditionGenerator();
 const leftKey = "q",
   rightKey = "p";
 
-export function createTimeline() {
-  let timeline = [];
+export async function run({ assetPaths }) {
+  const jsPsych = initJsPsych();
+  const timeline = [{ type: PreloadPlugin, audio: assetPaths.audio }];
 
-  const touchAdapterSpace = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode("space")
-  );
+  const touchAdapterSpace = new TouchAdapter("space");
   const bindSpaceTouchAdapterToWindow = async () => {
     await delay(500); // Prevent touch event from previous touch
     touchAdapterSpace.bindToElement(window);
@@ -179,7 +180,7 @@ export function createTimeline() {
     touchAdapterSpace.unbindFromElement(window);
   };
 
-  const globalProps = addIntroduction(timeline, {
+  const globalProps = addIntroduction(jsPsych, timeline, {
     skip: false,
     experimentName: "Color TOJ Negation",
     instructions: {
@@ -229,42 +230,51 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   const repetitions = 1;
   let trials = jsPsych.randomization.factorial(factors, repetitions);
 
-  const touchAdapterLeft = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(leftKey)
-  );
-  const touchAdapterRight = new TouchAdapter(
-    jsPsych.pluginAPI.convertKeyCharacterToKeyCode(rightKey)
-  );
+  const touchAdapterLeft = new TouchAdapter(leftKey);
+  const touchAdapterRight = new TouchAdapter(rightKey);
 
   let scaler; // Will store the Scaler object for the TOJ plugin
 
   // Create TOJ plugin trial object
   const toj = {
-    type: "toj-negation-dual",
+    type: DualNegationTojPlugin,
     modification_function: (element) => TojPlugin.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
-    probe_key: () => (jsPsych.timelineVariable("probeLeft", true) ? leftKey : rightKey),
-    reference_key: () => (jsPsych.timelineVariable("probeLeft", true) ? rightKey : leftKey),
+    probe_key: () => (jsPsych.timelineVariable("probeLeft") ? leftKey : rightKey),
+    reference_key: () => (jsPsych.timelineVariable("probeLeft") ? rightKey : leftKey),
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
     instruction_voice: () => sample(["m", "f"]),
-    on_start: async (trial) => {
-      const probeLeft = jsPsych.timelineVariable("probeLeft", true);
-      const cond = conditionGenerator.generateCondition(probeLeft);
+    on_start: (trial) => {
+      const probeLeft = jsPsych.timelineVariable("probeLeft");
+      const condition = conditionGenerator.generateCondition(probeLeft);
 
       // Log probeLeft and condition
       trial.data = {
         probeLeft,
-        condition: cond,
+        condition,
       };
 
-      trial.fixation_time = cond.targetPairs[0].fixationTime;
-      trial.distractor_fixation_time = cond.targetPairs[1].fixationTime;
+      trial.fixation_time = condition.targetPairs[0].fixationTime;
+      trial.distractor_fixation_time = condition.targetPairs[1].fixationTime;
       trial.instruction_language = globalProps.instructionLanguage;
+
+      // Set instruction color
+      trial.instruction_filename =
+        condition.targetPairs[trial.instruction_negated ? 1 : 0].primary.color.toName();
+
+      // Set distractor SOA
+      trial.distractor_soa = condition.distractorSOA;
+    },
+    on_load: () => {
+      const trial = jsPsych.getCurrentTrial();
+      const { condition } = trial.data;
+
+      const plugin = TojPlugin.current;
 
       const gridColor = "#777777";
 
       // Loop over targets, creating them and their grids in the corresponding quadrants
-      for (const targetPair of cond.targetPairs) {
+      for (const targetPair of condition.targetPairs) {
         [targetPair.primary, targetPair.secondary].map((target) => {
           const [gridElement, targetElement] = createBarStimulusGrid(
             ConditionGenerator.gridSize,
@@ -274,9 +284,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
             1,
             0.7,
             0.1,
-            cond.rotation
+            condition.rotation
           );
-          tojNegationPlugin.appendElement(gridElement);
+          plugin.appendElement(gridElement);
           (target.quadrant.isLeft() ? touchAdapterLeft : touchAdapterRight).bindToElement(
             gridElement
           );
@@ -306,18 +316,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
         });
       }
 
-      // Set instruction color
-      trial.instruction_filename = cond.targetPairs[
-        trial.instruction_negated ? 1 : 0
-      ].primary.color.toName();
-
-      // Set distractor SOA
-      trial.distractor_soa = cond.distractorSOA;
-    },
-    on_load: async () => {
       // Fit to window size
       scaler = new Scaler(
-        document.getElementById("jspsych-toj-container"),
+        plugin.container,
         ConditionGenerator.gridSize[0] * 40 * 2,
         ConditionGenerator.gridSize[1] * 40 * 2,
         10
@@ -354,17 +355,17 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   };
 
   const tutorialFinishedScreen = {
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus: "<p>You finished the tutorial.</p><p>Press any key to continue.</p>",
     on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   };
 
   const blockFinishedScreen = {
-    type: "html-keyboard-response",
+    type: HtmlKeyboardResponsePlugin,
     stimulus: () => {
-      const block = jsPsych.timelineVariable("block", true);
-      const blockCount = jsPsych.timelineVariable("blockCount", true);
+      const block = jsPsych.timelineVariable("block");
+      const blockCount = jsPsych.timelineVariable("blockCount");
       if (block < blockCount) {
         return `<p>You finished block ${block} of ${blockCount}.<p/><p>Press any key to continue.</p>`;
       } else {
@@ -384,5 +385,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     timeline_variables: Array.from(blockGenerator(10)),
   });
 
-  return timeline;
+  await jsPsych.run(timeline);
+  return jsPsych;
 }
