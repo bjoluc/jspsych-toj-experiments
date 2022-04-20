@@ -488,21 +488,65 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
         type: "survey-text",
         questions: () => {
           if (globalProps.instructionLanguage === "en") {
-            return [{ 
-              prompt: 
-                "<p>Do you have any guesses as to what we might be investigating and what might come out of it?</p>", 
+            return [
+              { 
+                name: "Do you have any guesses as to what we might be investigating and what might come out of it?",
+                prompt: "<p>Do you have any guesses as to what we might be investigating and what might come out of it?</p>", 
                 required: true,
                 rows: 10,
                 columns: 60,
-            }];
+              }
+            ];
           } else {
-            return [{ 
-              prompt: 
-                "<p>Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?</p>", 
+            return [
+              { 
+                name: "Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?",
+                prompt: "<p>Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?</p>", 
                 required: true,
                 rows: 10,
                 columns: 60,
-            }];
+              }
+            ];
+          };
+        },
+      },
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              { 
+                name: "Estimate: How often were negations (not red or not green) mentioned in direct successive stages?",
+                prompt: "<p>Estimate: How often were negations (\"not red\" or \"not green\") mentioned in direct successive stages?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+              {
+                name: "Do these negations follow a pattern?", 
+                prompt: "<p>Do these negations follow a pattern?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+            ];
+          } else {
+            return [
+              { 
+                name: "Schätzen Sie: Wie häufig wurden Negationen (nicht rot oder nicht grün) in direkt aufeinanderfolgenden Durchgängen genannt?",
+                prompt: "<p>Schätzen Sie: Wie häufig wurden Negationen (\"nicht rot\" oder \"nicht grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+              {
+                name: "Folgen die Negationen einem Muster?",
+                prompt: "<p>Folgen die Negationen einem Muster?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+            ];
           };    
         },
       },
@@ -512,75 +556,35 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
           if (globalProps.instructionLanguage === "en") {
             return [
               { 
-                prompt: 
-                  "<p>Estimate: How often were negations (\"not red\" or \"not green\") mentioned in direct successive stages?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
+                name: "Estimate: How often were sentences without negation (now red or now green) mentioned in direct successive stages?",
+                prompt: "<p>Estimate: How often were sentences without negation (\"now red\" or \"now green\") mentioned in direct successive stages?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
               },
               {
-                prompt: 
-                  "<p>Do these negations follow a pattern?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
+                name: "Do these sentences follow a pattern?",
+                prompt: "<p>Do these sentences follow a pattern?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
               },
             ];
           } else {
             return [
               { 
-                prompt: 
-                  "<p>Schätzen Sie: Wie häufig wurden Negationen (\"nicht rot\" oder \"nicht grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
+                name: "Schätzen Sie: Wie häufig wurden Sätze ohne Negation (jetzt rot oder jetzt grün) in direkt aufeinanderfolgenden Durchgängen genannt?",
+                prompt: "<p>Schätzen Sie: Wie häufig wurden Sätze ohne Negation (\"jetzt rot\" oder \"jetzt grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
               },
               {
-                prompt: 
-                  "<p>Folgen die Negationen einem Muster?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
-              },
-            ];
-          };    
-        },
-      },
-      {
-        type: "survey-text",
-        questions: () => {
-          if (globalProps.instructionLanguage === "en") {
-            return [
-              { 
-                prompt: 
-                  "<p>Estimate: How often were sentences without negation (\"now red\" or \"now green\") mentioned in direct successive stages?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
-              },
-              {
-                prompt: 
-                  "<p>Do these sentences follow a pattern?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
-              },
-            ];
-          } else {
-            return [
-              { 
-                prompt: 
-                  "<p>Schätzen Sie: Wie häufig wurden Sätze ohne Negation (\"jetzt rot\" oder \"jetzt grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
-              },
-              {
-                prompt: 
-                  "<p>Folgen diese Sätze einem Muster?</p>", 
-                  required: true,
-                  rows: 10,
-                  columns: 60,
+                name: "Folgen diese Sätze einem Muster?",
+                prompt: "<p>Folgen diese Sätze einem Muster?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
               },
             ];
           };    
