@@ -23,6 +23,7 @@ marked.setOptions({ breaks: true });
  *  * A welcome page with radio buttons for first time participation and language selection, including vsync detection and user agent logging in the background
  *  * A declaration of consent page
  *  * A participation code announcement or input page
+ *  * A page to select if it is the third participation
  *  * An age prompt
  *  * A gender prompt
  *  * A switch-to-fullscreen page
@@ -32,6 +33,7 @@ marked.setOptions({ breaks: true });
  * @param {{
  *   skip?: boolean; // Whether or not to skip the introduction and use default properties; useful for development.
  *   experimentName: string;
+ *   askForThirdParticipation: boolean;
  *   instructions: { // Markdown instruction strings
  *     de: string;
  *     en: string;
@@ -40,7 +42,8 @@ marked.setOptions({ breaks: true });
  *
  * @returns {{
  *  instructionLanguage: "de"|"en";
- *  isFirstParticipation: boolean;,
+ *  isFirstParticipation: boolean;
+ *  isThirdParticipation: boolean;
  *  participantCode: string;
  * }}
  */
@@ -49,6 +52,7 @@ export function addIntroduction(timeline, options) {
     return {
       instructionLanguage: "en",
       isFirstParticipation: false,
+      isThirdParticipation: false,
       participantCode: "ABCD",
     };
   }
@@ -93,15 +97,23 @@ export function addIntroduction(timeline, options) {
     timeline: [
       {
         type: "survey-text",
-        questions: [
-          {
-            prompt:
-              "<p>Please enter your participant code (the one you got the first time you participated in this experiment).</p>",
-            required: true,
-          },
-        ],
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [{ 
+              prompt: 
+                "<p>Please enter your participant code (that you got the first time you participated in this experiment).</p>",
+              required: true,
+            }];
+          } else {
+            return [{ 
+              prompt: 
+                "<p>Bitte geben sie ihren Teilnahme-Code ein (den Sie bei der ersten Teilnahme an diesem Experiment bekommen haben).</p>", 
+              required: true,
+            }];
+          };    
+        },
         on_finish: (trial) => {
-          const responses = trial.responses;
+          const responses = JSON.parse(trial.responses);
           const newProps = {
             participantCode: responses.Q0,
           };
@@ -199,6 +211,37 @@ export function addIntroduction(timeline, options) {
     ],
   });
 
+  // Ask for third participation
+  timeline.push({
+    conditional_function: () => options.askForThirdParticipation === true && !globalProps.isFirstParticipation,
+    timeline: [
+      {
+        type: "survey-multi-choice",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [{
+            prompt: "Is this the third time you participate in this experiment?",
+            options: ["Yes", "No"],
+            required: true,}];
+          } else {
+            return [{
+            prompt: "Ist dies Ihre dritte Teilnahme an diesem Experiment?",
+            options: ["Ja", "Nein"],
+            required: true,}];
+          };          
+        },
+        on_finish: (trial) => {
+          const responses = JSON.parse(trial.responses);
+          const newProps = {
+            isThirdParticipation: responses.Q0 === "Yes" || responses.Q0 === "Ja",
+          };
+          Object.assign(globalProps, newProps);
+          jsPsych.data.addProperties(newProps);
+        },
+      },
+    ],
+  });
+
   // Age prompt
   timeline.push({
     conditional_function: () => globalProps.isFirstParticipation,
@@ -225,6 +268,14 @@ export function addIntroduction(timeline, options) {
   timeline.push({
     type: "fullscreen",
     fullscreen_mode: true,
+    message: () => 
+      globalProps.instructionLanguage === "en"
+        ? ["<p>The experiment will switch to full screen mode when you press the button below.</p>"]
+        : ["<p>Das Experiment wechselt in den Vollbild-Modus, sobald Sie die Schaltfläche betätigen.</p>"],
+    button_label: () => 
+      globalProps.instructionLanguage === "en"
+        ? ["Switch to full screen mode"]
+        : ["In Vollbild-Modus wechseln"],
   });
 
   // Instructions

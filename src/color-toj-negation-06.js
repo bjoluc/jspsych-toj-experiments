@@ -22,6 +22,7 @@ import "../styles/main.scss";
 
 // jsPsych plugins
 import "jspsych/plugins/jspsych-html-keyboard-response";
+import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-call-function";
 import { TojPluginWhichFirst } from "./plugins/jspsych-toj-negation-which_first";
 import tojPlugin from "./plugins/jspsych-toj-negation-which_first";
@@ -192,6 +193,7 @@ export function createTimeline() {
   
   const globalProps = addIntroduction(timeline, {
     skip: false,
+    askForThirdParticipation: true,
     //new: changed title to "Negaion 6"
     experimentName: "Color TOJ Negation 6",
     instructions: {
@@ -471,13 +473,134 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
       if (block < blockCount) {
         return `<h1>Pause</h1><p>You finished block ${block} of ${blockCount}.<p/><p>Press SPACE key or touch to continue.</p>`;
       } else {
-        return "<p>This part of the experiment is finished. Press any key or touch to submit the results!</p>";
+        return "<p>This part of the experiment is finished.</p><p>Press any key or touch to continue.</p>";
       }
     },
     on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   });
  
+  // Questions which appear after the last block if it is the subjects third participation
+  const thirdParticipationQuestions = {
+    conditional_function: () => globalProps.isThirdParticipation === true,
+    timeline: [
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              { 
+                name: "What do you reckon we are investigating? What do you think might be the result of the study?",
+                prompt: "<p>What do you reckon we are investigating? What do you think might be the result of the study?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              }
+            ];
+          } else {
+            return [
+              { 
+                name: "Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?",
+                prompt: "<p>Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              }
+            ];
+          };
+        },
+      },
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              { 
+                name: "Please estimate: How often were negations (not red or not green) said in successive trials?",
+                prompt: "<p>Please estimate: How often were negations (\"not red\" or \"not green\") said in successive trials?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+              {
+                name: "Do these negations follow a pattern?", 
+                prompt: "<p>Do these negations follow a pattern?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+            ];
+          } else {
+            return [
+              { 
+                name: "Schätzen Sie: Wie häufig wurden Negationen (nicht rot oder nicht grün) in direkt aufeinanderfolgenden Durchgängen genannt?",
+                prompt: "<p>Schätzen Sie: Wie häufig wurden Negationen (\"nicht rot\" oder \"nicht grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+              {
+                name: "Folgen die Negationen einem Muster?",
+                prompt: "<p>Folgen die Negationen einem Muster?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+            ];
+          };    
+        },
+      },
+      {
+        type: "survey-text",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              { 
+                name: "Please estimate: How often were sentences without negation (now red or now green) said in successive trials?",
+                prompt: "<p>Please estimate: How often were sentences without negation (\"now red\" or \"now green\") said in successive trials?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+              {
+                name: "Do these sentences follow a pattern?",
+                prompt: "<p>Do these sentences follow a pattern?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+            ];
+          } else {
+            return [
+              { 
+                name: "Schätzen Sie: Wie häufig wurden Sätze ohne Negation (jetzt rot oder jetzt grün) in direkt aufeinanderfolgenden Durchgängen genannt?",
+                prompt: "<p>Schätzen Sie: Wie häufig wurden Sätze ohne Negation (\"jetzt rot\" oder \"jetzt grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+              {
+                name: "Folgen diese Sätze einem Muster?",
+                prompt: "<p>Folgen diese Sätze einem Muster?</p>", 
+                required: true,
+                rows: 10,
+                columns: 60,
+              },
+            ];
+          };    
+        },
+      },  
+    ],
+  };
+  
+  const finalScreen = {
+    type: "html-keyboard-response",
+    choices: jsPsych.ALL_KEYS,
+    stimulus: () =>  
+      globalProps.instructionLanguage === "en"
+        ? ["<h1>This part of the experiment is finished.</h1><p>Thank you for participating. Press any key or touch to submit the results.</p>"]
+        : ["<h1>Vielen Dank für Ihre Teilnahme am Experiment!</h1><p>Drücken Sie eine beliebige Taste oder berühren Sie Ihren Touchscreen um die Resultate abzusenden.</p>"],
+  }
   
   let timelineVariablesBlock = [];
   let curBlockIndex = 0;
@@ -530,6 +653,9 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
     }
   }
   timeline.push(cursor_on);
+
+  timeline.push(thirdParticipationQuestions);
+  timeline.push(finalScreen);
 
   // Disable fullscreen
   timeline.push({
