@@ -101,7 +101,7 @@ export function addIntroduction(timeline, options) {
           if (globalProps.instructionLanguage === "en") {
             return [{ 
               prompt: 
-                "<p>Please enter your participant code (the one you got the first time you participated in this experiment).</p>",
+                "<p>Please enter your participant code (that you got the first time you participated in this experiment).</p>",
               required: true,
             }];
           } else {

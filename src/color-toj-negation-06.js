@@ -490,8 +490,8 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
           if (globalProps.instructionLanguage === "en") {
             return [
               { 
-                name: "Do you have any guesses as to what we might be investigating and what might come out of it?",
-                prompt: "<p>Do you have any guesses as to what we might be investigating and what might come out of it?</p>", 
+                name: "What do you reckon we are investigating? What do you think might be the result of the study?",
+                prompt: "<p>What do you reckon we are investigating? What do you think might be the result of the study?</p>", 
                 required: true,
                 rows: 10,
                 columns: 60,
@@ -516,8 +516,8 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
           if (globalProps.instructionLanguage === "en") {
             return [
               { 
-                name: "Estimate: How often were negations (not red or not green) mentioned in direct successive stages?",
-                prompt: "<p>Estimate: How often were negations (\"not red\" or \"not green\") mentioned in direct successive stages?</p>", 
+                name: "Please estimate: How often were negations (not red or not green) said in successive trials?",
+                prompt: "<p>Please estimate: How often were negations (\"not red\" or \"not green\") said in successive trials?</p>", 
                 required: true,
                 rows: 10,
                 columns: 60,
@@ -556,8 +556,8 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
           if (globalProps.instructionLanguage === "en") {
             return [
               { 
-                name: "Estimate: How often were sentences without negation (now red or now green) mentioned in direct successive stages?",
-                prompt: "<p>Estimate: How often were sentences without negation (\"now red\" or \"now green\") mentioned in direct successive stages?</p>", 
+                name: "Please estimate: How often were sentences without negation (now red or now green) said in successive trials?",
+                prompt: "<p>Please estimate: How often were sentences without negation (\"now red\" or \"now green\") said in successive trials?</p>", 
                 required: true,
                 rows: 10,
                 columns: 60,
