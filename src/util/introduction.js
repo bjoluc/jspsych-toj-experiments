@@ -97,13 +97,21 @@ export function addIntroduction(timeline, options) {
     timeline: [
       {
         type: "survey-text",
-        questions: [
-          {
-            prompt:
-              "<p>Please enter your participant code (the one you got the first time you participated in this experiment).</p>",
-            required: true,
-          },
-        ],
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [{ 
+              prompt: 
+                "<p>Please enter your participant code (the one you got the first time you participated in this experiment).</p>",
+              required: true,
+            }];
+          } else {
+            return [{ 
+              prompt: 
+                "<p>Bitte geben sie ihren Teilnahme-Code ein (den Sie bei der ersten Teilnahme an diesem Experiment bekommen haben).</p>", 
+              required: true,
+            }];
+          };    
+        },
         on_finish: (trial) => {
           const responses = JSON.parse(trial.responses);
           const newProps = {
@@ -260,6 +268,14 @@ export function addIntroduction(timeline, options) {
   timeline.push({
     type: "fullscreen",
     fullscreen_mode: true,
+    message: () => 
+      globalProps.instructionLanguage === "en"
+        ? ["<p>The experiment will switch to full screen mode when you press the button below.</p>"]
+        : ["<p>Das Experiment wechselt in den Vollbild-Modus, sobald Sie die Schaltfläche betätigen.</p>"],
+    button_label: () => 
+      globalProps.instructionLanguage === "en"
+        ? ["Switch to full screen mode"]
+        : ["In Vollbild-Modus wechseln"],
   });
 
   // Instructions
