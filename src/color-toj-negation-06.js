@@ -492,12 +492,16 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
               prompt: 
                 "<p>Do you have any guesses as to what we might be investigating and what might come out of it?</p>", 
                 required: true,
+                rows: 10,
+                columns: 60,
             }];
           } else {
             return [{ 
               prompt: 
                 "<p>Haben Sie eine Vermutung, was wir untersuchen und was herauskommen könnte?</p>", 
                 required: true,
+                rows: 10,
+                columns: 60,
             }];
           };    
         },
@@ -511,11 +515,15 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
                 prompt: 
                   "<p>Estimate: How often were negations (\"not red\" or \"not green\") mentioned in direct successive stages?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
               {
                 prompt: 
                   "<p>Do these negations follow a pattern?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
             ];
           } else {
@@ -524,11 +532,15 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
                 prompt: 
                   "<p>Schätzen Sie: Wie häufig wurden Negationen (\"nicht rot\" oder \"nicht grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
               {
                 prompt: 
                   "<p>Folgen die Negationen einem Muster?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
             ];
           };    
@@ -543,11 +555,15 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
                 prompt: 
                   "<p>Estimate: How often were sentences without negation (\"now red\" or \"now green\") mentioned in direct successive stages?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
               {
                 prompt: 
                   "<p>Do these sentences follow a pattern?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
             ];
           } else {
@@ -556,11 +572,15 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
                 prompt: 
                   "<p>Schätzen Sie: Wie häufig wurden Sätze ohne Negation (\"jetzt rot\" oder \"jetzt grün\") in direkt aufeinanderfolgenden Durchgängen genannt?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
               {
                 prompt: 
                   "<p>Folgen diese Sätze einem Muster?</p>", 
                   required: true,
+                  rows: 10,
+                  columns: 60,
               },
             ];
           };    
@@ -572,7 +592,10 @@ Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Exper
   const finalScreen = {
     type: "html-keyboard-response",
     choices: jsPsych.ALL_KEYS,
-    stimulus: "<h1>Danke für Ihre Teilnahme am Experiment!</h1><p>Drücken Sie eine beliebige Taste oder berühren Sie Ihren Touchscreen um das Experiment zu beenden.</p>"
+    stimulus: () =>  
+      globalProps.instructionLanguage === "en"
+        ? ["<h1>This part of the experiment is finished.</h1><p>Thank you for participating. Press any key or touch to submit the results.</p>"]
+        : ["<h1>Vielen Dank für Ihre Teilnahme am Experiment!</h1><p>Drücken Sie eine beliebige Taste oder berühren Sie Ihren Touchscreen um die Resultate abzusenden.</p>"],
   }
   
   let timelineVariablesBlock = [];
