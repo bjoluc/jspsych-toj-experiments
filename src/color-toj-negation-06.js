@@ -199,11 +199,11 @@ export function createTimeline() {
     instructions: {
     //new: from neg02 (copied english and german instructions; edited text in first paragraph: changed colors to just red/rot and green/grün)
       en: `
-You will see a grid of bars and a point in the middle. Please try to fixate the point during the whole experiment.
+You will see a grid of bars and a point in the middle. Please try to focus the point during the whole experiment.
 Two of the bars are colored (red or green).
-At the beginning of each trial, you will hear an instruction like "now red" or "not green" (make sure to turn your sound on).
+At the beginning of each trial, you will hear an instruction like "now red" or "not green".
 This informs you which of the bars is relevant for the respective trial.
-Successively, each of the colored bars will flash once.
+Then, each of the colored bars will flash once.
 Based on this, your task is to decide whether the bar indicated by the instruction flashed first or second.
 
 If it flashed first, press **Q** (or tap on the left half of your screen).
@@ -216,14 +216,12 @@ If, for example, there is a green and a red bar and the voice says “not green�
 
 The experiment will start with a tutorial of 30 trials in which a sound at the end of each trial will indicate whether your answer was correct or not.
 Note that the playback of audio may be delayed for some of the first trials.
-
-If you usually wear glasses, please wear them for the experiment. If you have any form of color blindness, you cannot participate in this experiment.
       `,
       de: `
 Sie sehen gleich ein Muster aus Strichen und einen Punkt in der Mitte. Schauen sie möglichst während des gesamten Experimentes auf diesen Punkt.
-Zwei der Striche sind farbig (rot oder grün).
-Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht grün" (denken Sie daran, den Ton einzuschalten).
-Diese sagt Ihnen, welcher der beiden Striche beurteilt werden soll.
+Zwei dieser Striche sind farbig (je eines rot und grün).
+Am Anfang jedes Durchgangs hören Sie eine Anweisung wie "jetzt rot" oder "nicht grün".
+Diese sagt Ihnen, welcher Strich beurteilt werden soll.
 Anschließend wird jeder der farbigen Striche kurz blinken.
 Ihre Aufgabe ist es, zu entscheiden, ob der in der Instruktion benannte Strich zuerst geblinkt hat oder als zweiter.
 
@@ -237,8 +235,6 @@ Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme
 
 Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.
 Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
-
-Falls Sie für üblich eine Brille tragen, setzen Sie diese bitte für das Experiment auf. Falls Sie eine Farbfehlsichtigkeit haben können Sie nicht an diesem Experiment teilnehmen.
       `,
       //endNew: from neg02
     },
