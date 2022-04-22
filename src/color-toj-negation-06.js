@@ -1,15 +1,14 @@
 /**
  * @title Color TOJ Negation 6
- * @description Experiment on negation in TVA instructions (dual-colored version, copy of experiment 3 (paper: 1b) with well-defined assertion/negation sequence lengths (formerly only random lengths) and fewer SOAs).
- * - Includes improvements:
- * - new declaration of consent, conforming DSGVO
- * - note about color vision deficiency + linking to a self-check
- * - instructions to turn screen into landscape mode
- * - instructions about deactivating blue light filters
- * - instructions about deactivating blue light dark mode
- * - Instructions to turn on sound and sound test (still to be done)
- * - Experiment after a pause is continued by pressing the space bar, not by pressing any key
- * @version 0.1.0rc
+ * @description Experiment on negation in TVA instructions (dual-colored version with two stimuli, a merge of experiment color-toj-negation-05.js as a skeleton (meta data collection and trial generation) and experiment color-toj-negation-02.js for trial presentation (display of two stimuli instead of two stimuli pairs). This experiment is a replication of color-toj-negation-02.js with controlled sequence lengths of negations/assertions. Aside from that, following improvements / changes were made:
+ * - Instruction phase: matched the experiment descriptions in declaration of consent (DSGVO) to the new experiment content (external html, specific to this experiment)
+ * - Fix: Translation of headers in written instructions (external html)
+ * - Improvement: parametrization of conditions to calculate the correct answer key was customized for this kind of experiment (not judging which stimuli flickered first as in jspsych-toj-negation.js but judge whether probe (instructed color) flickered first or second). The plugin jspsych-toj-negation-which_first.js was developed (derivative of TojPlugin) (specific to this experiment; can be reused)
+ * - Instruction phase: discouraged use of large screens
+ * - introduction.js: Added prompt asking whether this will be a participant's last session. If so: After finishing the last session: Ask participants about their guess about the hypothesis of this study
+ 
+ *
+ * @version 0.1.1rc
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
