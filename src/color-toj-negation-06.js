@@ -9,7 +9,7 @@
  * - instructions about deactivating blue light dark mode
  * - Instructions to turn on sound and sound test (still to be done)
  * - Experiment after a pause is continued by pressing the space bar, not by pressing any key
- * @version 1.1.0
+ * @version 0.1.0rc
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
