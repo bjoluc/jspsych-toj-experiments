@@ -161,7 +161,7 @@ export function createTimeline() {
 
   const globalProps = addIntroduction(timeline, {
     skip: false,
-    askForThirdParticipation: true,
+    askForLastParticipation: true,
     experimentName: "Color TOJ Negation 6",
     instructions: {
       en: `
@@ -418,10 +418,10 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   });
- 
-  // Questions which appear after the last block if it is the subjects third participation
-  const thirdParticipationQuestions = {
-    conditional_function: () => globalProps.isThirdParticipation === true,
+
+  // Questions which appear after the last block if it is the subject's last participation
+  const lastParticipationSurvey = {
+    conditional_function: () => globalProps.isLastParticipation === true,
     timeline: [
       {
         type: "survey-text",
@@ -593,7 +593,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   }
   timeline.push(cursor_on);
 
-  timeline.push(thirdParticipationQuestions);
+  timeline.push(lastParticipationSurvey);
   timeline.push(finalScreen);
 
   // Disable fullscreen
