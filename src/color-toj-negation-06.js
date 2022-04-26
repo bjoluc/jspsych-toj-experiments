@@ -6,14 +6,11 @@
  * - Improvement: parametrization of conditions to calculate the correct answer key was customized for this kind of experiment (not judging which stimuli flickered first as in jspsych-toj-negation.js but judge whether probe (instructed color) flickered first or second). The plugin jspsych-toj-negation-which_first.js was developed (derivative of TojPlugin) (specific to this experiment; can be reused)
  * - Instruction phase: discouraged use of large screens
  * - introduction.js: Added prompt asking whether this will be a participant's last session. If so: After finishing the last session: Ask participants about their guess about the hypothesis of this study
- 
- *
- * @version 0.1.1rc
+ * @version 0.1.2rc
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
  */
-//new: (above) changed title to "Negation 6"; TODO: description needs to be changed to describe neg6 instead of neg5
 
 "use strict";
 
@@ -25,11 +22,6 @@ import "jspsych/plugins/jspsych-survey-text";
 import "jspsych/plugins/jspsych-call-function";
 import { TojPluginWhichFirst } from "./plugins/jspsych-toj-negation-which_first";
 import tojPlugin from "./plugins/jspsych-toj-negation-which_first";
-//old: removed imports that are not needed in neg6
-//import tojNegationPlugin from "./plugins/jspsych-toj-negation-dual";
-//import "./plugins/jspsych-toj-negation-dual";
-//new: from neg02
-//endNew: from neg02
 
 import { generateAlternatingSequences, copy } from "./util/trialGenerator";
 
@@ -42,8 +34,6 @@ import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
 import { LabColor } from "./util/colors";
-//old: removed Quadrant import because its not needed in neg6
-//import { Quadrant } from "./util/Quadrant";
 import { addIntroduction } from "./util/introduction";
 
 
@@ -61,20 +51,11 @@ class TojTarget {
    */
   color;
 
-  //new: from neg02
   /**
    * Whether the target is displayed on the left side of the screen
    * @type boolean
    */
   isLeft;
-  //endNew: from neg02
-  
-  //old: removed quadrant because its not needed in neg6
-  /**
-   * The quadrant in which the target is displayed
-   * @type {Quadrant}
-   */
-  //quadrant;
 
   /**
    * Whether the target serves as a probe or a reference
@@ -90,7 +71,6 @@ class TojTarget {
 }
 
 class ConditionGenerator {
-  //new: changed gridSize cause halfs instead of quadrants needed
   /**
    * The size ([x, y]) of the grid in one half
    */
@@ -132,11 +112,8 @@ class ConditionGenerator {
     return new LabColor(sample([180]));
   }
 
- 
-  //new: from neg02
   generateCondition(probeLeft) {
     const alpha = ConditionGenerator.alpha;
-    //diff to neg02: changed targets implementation to fit style of neg05
     let targets = {};
 
     // Generate a target pair
@@ -148,7 +125,6 @@ class ConditionGenerator {
     const reference = new TojTarget();
     reference.isProbe = false;
     reference.isLeft = !probeLeft;
-    //diff to neg02: changed color value to 180 cause only red and green needed
     reference.color = probe.color.getRandomRelativeColor([180]);
 
     [probe, reference].map((target) => {
@@ -156,18 +132,13 @@ class ConditionGenerator {
       target.gridPosition = ConditionGenerator.generateRandomPos(xRange, [2, 5]);
     });
     
-    //diff to neg02: changed targets implementation to fit style of neg05
     targets = { probe, reference, fixationTime: randomInt(300, 500) };
 
     return {
-      //diff to neg02: changed targets implementation to fit style of neg05
       targets,
-      //diff to neg02: removed return of fixationTime because it is handled within "targets" now
-      //fixationTime: randomInt(300, 500),
       rotation: this.generateOrientation(),
     };
   }
-  //endNew: from neg02
 }
 
 const conditionGenerator = new ConditionGenerator();
@@ -192,11 +163,9 @@ export function createTimeline() {
   
   const globalProps = addIntroduction(timeline, {
     skip: false,
-    askForThirdParticipation: true,
-    //new: changed title to "Negaion 6"
+    askForLastParticipation: true,
     experimentName: "Color TOJ Negation 6",
     instructions: {
-    //new: from neg02 (copied english and german instructions; edited text in first paragraph: changed colors to just red/rot and green/grün)
       en: `
 You will see a grid of bars and a point in the middle. Please try to focus the point during the whole experiment.
 Two of the bars are colored (red or green).
@@ -235,36 +204,24 @@ Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme
 Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.
 Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       `,
-      //endNew: from neg02
     },
   });
 
   // Generate trials
   const factors = {
     isInstructionNegated: [true, false],
-    //probeLeft: [true, false],
-    //new: from neg02
-    probeLeft: [true, false],
-    //endNew: from neg02
     
     soa: soaChoices,
     sequenceLength: [1, 2, 5],
   };
   const factorsTutorial = {
     isInstructionNegated: [true, false],
-    //new: from neg02
-    probeLeft: [true, false],
-    //endNew: from neg02
     
     soa: soaChoicesTutorial,
     sequenceLength: [1, 2, 5],
   };
   const factorsDebug = {
     isInstructionNegated: [true, false],
-    //new: from neg02
-    probeLeft: [true, false],
-    //endNew: from neg02
-    
     soa: [-6, 6].map((x) => (x * 16.6667).toFixed(3)),
     sequenceLength: [1, 2],
   };
@@ -297,13 +254,11 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
 
   let scaler; // Will store the Scaler object for the TOJ plugin
   
-  //new: from neg02
   // Create TOJ plugin trial object
   const toj = {
     type: "toj-which_first",
     modification_function: (element) => TojPluginWhichFirst.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
-    //diff to neg02: changed probe_key and reference_key lines to fit neg05 implementation
     first_key: () => leftKey,
     second_key: () => rightKey,
     probe_key: () => "undefined",
@@ -319,8 +274,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       // console.log((trial.soa <= 0  === (trial.greenCalled != trial.instruction_negated ))? leftKey : rightKey)
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
       const cond = conditionGenerator.generateCondition(probeLeft);
-      
-      //diff to neg02: added sequenceLength, rank, blockIndex, trialIndexInThisTimeline, trialIndexInThisBlock to fit neg05 implementation
       // Log probeLeft and condition
       trial.data = {
         probeLeft,
@@ -335,7 +288,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       trial.fixation_time = cond.fixationTime;
       trial.instruction_language = globalProps.instructionLanguage;
       
-      //diff to neg02: added gridColor here instead of globally
       const gridColor = "#777777";
 
       //trial.instruction_filename = (redInstruction
@@ -389,7 +341,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
         10
       );
     },
-    //diff to neg02: added optional debugmode and warm-up stopping from neg05
     on_finish: function (data) {
       scaler.destruct();
       touchAdapterLeft.unbindFromAll();
@@ -406,7 +357,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       }
     },
   };
-  //endNew: fromneg02
 
   const cursor_off = {
     type: "call-function",
@@ -474,10 +424,10 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     on_start: bindSpaceTouchAdapterToWindow,
     on_finish: unbindSpaceTouchAdapterFromWindow,
   });
- 
-  // Questions which appear after the last block if it is the subjects third participation
-  const thirdParticipationQuestions = {
-    conditional_function: () => globalProps.isThirdParticipation === true,
+
+  // Questions which appear after the last block if it is the subject's last participation
+  const lastParticipationSurvey = {
+    conditional_function: () => globalProps.isLastParticipation === true,
     timeline: [
       {
         type: "survey-text",
@@ -649,7 +599,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   }
   timeline.push(cursor_on);
 
-  timeline.push(thirdParticipationQuestions);
+  timeline.push(lastParticipationSurvey);
   timeline.push(finalScreen);
 
   // Disable fullscreen
