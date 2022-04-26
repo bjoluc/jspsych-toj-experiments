@@ -212,21 +212,18 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   // Generate trials
   const factors = {
     isInstructionNegated: [true, false],
-    probeLeft: [true, false],
     
     soa: soaChoices,
     sequenceLength: [1, 2, 5],
   };
   const factorsTutorial = {
     isInstructionNegated: [true, false],
-    probeLeft: [true, false],
     
     soa: soaChoicesTutorial,
     sequenceLength: [1, 2, 5],
   };
   const factorsDebug = {
     isInstructionNegated: [true, false],
-    probeLeft: [true, false],
     soa: [-6, 6].map((x) => (x * 16.6667).toFixed(3)),
     sequenceLength: [1, 2],
   };
