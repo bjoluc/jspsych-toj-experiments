@@ -112,10 +112,7 @@ class ConditionGenerator {
     return new LabColor(sample([180]));
   }
 
-
- 
-  //new: from neg02
-  generateCondition(probeLeft, greenMeant) {
+  generateCondition(probeLeft, isProbeGreen) {
     const alpha = ConditionGenerator.alpha;
     let targets = {};
 
@@ -123,8 +120,7 @@ class ConditionGenerator {
     const probe = new TojTarget();
     probe.isProbe = true;
     probe.isLeft = probeLeft;
-    // probe.color = ConditionGenerator.getRandomPrimaryColor();
-    probe.color = new LabColor(greenMeant ? 180 : 0);
+    probe.color = new LabColor(isProbeGreen ? 180 : 0);
 
     const reference = new TojTarget();
     reference.isProbe = false;
@@ -268,17 +264,20 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     probe_key: () => "undefined",
     reference_key: () => "undefined",
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
-    greenCalled: jsPsych.timelineVariable("GreenFact"),
+    hasGreenInInstruction: jsPsych.timelineVariable("hasGreenInInstruction"),
     instruction_voice: () => sample(["m", "f"]),
     on_start: async (trial) => {
       // console.log(trial.soa)
-      // console.log(trial.greenCalled ? "green called": "red called")
-      // console.log((trial.greenCalled !== trial.instruction_negated) ? "green meant": "red meant")
+      // console.log(trial.hasGreenInInstruction ? "green called": "red called")
+      // console.log((trial.hasGreenInInstruction !== trial.instruction_negated) ? "green meant": "red meant")
       // console.log(trial.instruction_negated ? "instruction negated": "instruction not negated")
-      // console.log((trial.soa <= 0  === (trial.greenCalled != trial.instruction_negated ))? leftKey : rightKey)
+      // console.log((trial.soa <= 0  === (trial.hasGreenInInstruction != trial.instruction_negated ))? leftKey : rightKey)
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
-      
-      const cond = conditionGenerator.generateCondition(probeLeft,  trial.instruction_negated != trial.greenCalled);
+
+      const cond = conditionGenerator.generateCondition(
+        probeLeft,
+        trial.instruction_negated != trial.hasGreenInInstruction
+      );
 
       // Log probeLeft and condition
       trial.data = {
@@ -337,10 +336,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       }
 
       // Set instruction color
-      trial.instruction_filename = (trial.greenCalled
-        ? "green"
-        : "red"
-      );
+      trial.instruction_filename = trial.hasGreenInInstruction ? "green" : "red";
     },
     on_load: async () => {
       // Fit to window size
@@ -386,7 +382,10 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   // Tutorial
   let trialDataTutorial = generateAlternatingSequences(factorsTutorial, 5, true); // generate trials with larger SOAs in tutorial
 
-  trialDataTutorial.trials = trialDataTutorial.trials.map(trial => ({GreenFact:randomInt(0,1) === 1, ...trial}))
+  trialDataTutorial.trials = trialDataTutorial.trials.map((trial) => ({
+    hasGreenInInstruction: randomInt(0, 1) === 1,
+    ...trial,
+  }));
 
   let trialsTutorial = trialDataTutorial.trials.slice(0, debugmode ? 10 : 30);
   //let trialsTutorial = trials.slicetrials.slice(0, debugmode ? 10 : 30); // or duplicate trials that are actually used
@@ -569,7 +568,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
 
   for (let i = 0; i < trials.length; i++) {
     let trial = trials[i];
-    trial.GreenFact = randomInt(0,1) === 1
+    trial.hasGreenInInstruction = randomInt(0, 1) === 1;
     timelineVariablesBlock.push(trial);
 
     if (

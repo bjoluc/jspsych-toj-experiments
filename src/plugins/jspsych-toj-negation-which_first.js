@@ -18,12 +18,12 @@ export class TojPluginWhichFirst extends TojPlugin {
     name: "toj-which_first",
     parameters: {
       ...this.info.parameters,
-      greenCalled: {
+      hasGreenInInstruction: {
         type: jsPsych.plugins.parameterType.BOOLEAN,
-        pretty_name: "was green called",
+        pretty_name: "has green in instruction",
         default: true,
         description:
-          "Was the green element called by the voice",
+          "Is the string \"green\" uttered in the instruction? 0 if \"red\" was uttered, 1 if \"green\" was uttered.",
       },
       first_key: {
         type: jsPsych.plugins.parameterType.KEYCODE,
@@ -115,12 +115,10 @@ export class TojPluginWhichFirst extends TojPlugin {
         break;
     }
 
-
-    // let isGreen =  trial.greenCalled !== trial.instruction_negated
-
-    let MeantisFirst = trial.soa < 0 // because meant is probe
-
-    let correct = ((MeantisFirst === (response === "first")) || trial.soa === 0);
+    // the probe is the stimuli that is being instructed to attend. 
+    // Instruction "not red" --> probe is green. Instruction "now red" --> probe is red.
+    let isProbeFirst = trial.soa < 0;
+    let correct = isProbeFirst === (response === "first") || trial.soa === 0;
 
     const resultData = Object.assign({}, trial, {
       response_key: responseKey,
