@@ -112,7 +112,10 @@ class ConditionGenerator {
     return new LabColor(sample([180]));
   }
 
-  generateCondition(probeLeft) {
+
+ 
+  //new: from neg02
+  generateCondition(probeLeft, greenMeant) {
     const alpha = ConditionGenerator.alpha;
     let targets = {};
 
@@ -120,7 +123,8 @@ class ConditionGenerator {
     const probe = new TojTarget();
     probe.isProbe = true;
     probe.isLeft = probeLeft;
-    probe.color = ConditionGenerator.getRandomPrimaryColor();
+    // probe.color = ConditionGenerator.getRandomPrimaryColor();
+    probe.color = new LabColor(greenMeant ? 180 : 0);
 
     const reference = new TojTarget();
     reference.isProbe = false;
@@ -273,7 +277,9 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       // console.log(trial.instruction_negated ? "instruction negated": "instruction not negated")
       // console.log((trial.soa <= 0  === (trial.greenCalled != trial.instruction_negated ))? leftKey : rightKey)
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
-      const cond = conditionGenerator.generateCondition(probeLeft);
+      
+      const cond = conditionGenerator.generateCondition(probeLeft,  trial.instruction_negated != trial.greenCalled);
+
       // Log probeLeft and condition
       trial.data = {
         probeLeft,
@@ -325,12 +331,16 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
           trial.reference_element = targetElement;
         }
       });
+      if(debugmode){
+        console.log("Probe color: "+ cond.targets.probe.color.toName())
+        console.log("Ref color: "+ cond.targets.reference.color.toName())
+      }
 
       // Set instruction color
       trial.instruction_filename = (trial.greenCalled
-        ? cond.targets.probe
-        : cond.targets.reference
-      ).color.toName();
+        ? "green"
+        : "red"
+      );
     },
     on_load: async () => {
       // Fit to window size

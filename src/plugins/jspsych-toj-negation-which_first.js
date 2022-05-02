@@ -116,11 +116,11 @@ export class TojPluginWhichFirst extends TojPlugin {
     }
 
 
-    let isGreen =  trial.greenCalled !== trial.instruction_negated
+    // let isGreen =  trial.greenCalled !== trial.instruction_negated
 
-    let isFirst = (trial.soa < 0 === isGreen)
+    let MeantisFirst = trial.soa < 0 // because meant is probe
 
-    let correct = ((isFirst === (response === "first")) || trial.soa === 0);
+    let correct = ((MeantisFirst === (response === "first")) || trial.soa === 0);
 
     const resultData = Object.assign({}, trial, {
       response_key: responseKey,
