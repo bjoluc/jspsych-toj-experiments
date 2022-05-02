@@ -6,7 +6,7 @@
  * - Improvement: parametrization of conditions to calculate the correct answer key was customized for this kind of experiment (not judging which stimuli flickered first as in jspsych-toj-negation.js but judge whether probe (instructed color) flickered first or second). The plugin jspsych-toj-negation-which_first.js was developed (derivative of TojPlugin) (specific to this experiment; can be reused)
  * - Instruction phase: discouraged use of large screens
  * - introduction.js: Added prompt asking whether this will be a participant's last session. If so: After finishing the last session: Ask participants about their guess about the hypothesis of this study
- * @version 0.1.2rc
+ * @version 1.0.0
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
