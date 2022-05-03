@@ -109,10 +109,10 @@ class ConditionGenerator {
   }
   
   static getRandomPrimaryColor() {
-    return new LabColor(sample([180]));
+    return new LabColor(sample([0, 180]));
   }
 
-  generateCondition(probeLeft, isProbeGreen) {
+  generateCondition(probeLeft) {
     const alpha = ConditionGenerator.alpha;
     let targets = {};
 
@@ -120,7 +120,7 @@ class ConditionGenerator {
     const probe = new TojTarget();
     probe.isProbe = true;
     probe.isLeft = probeLeft;
-    probe.color = new LabColor(isProbeGreen ? 180 : 0);
+    probe.color = ConditionGenerator.getRandomPrimaryColor();
 
     const reference = new TojTarget();
     reference.isProbe = false;
@@ -264,7 +264,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     probe_key: () => "undefined",
     reference_key: () => "undefined",
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
-    hasGreenInInstruction: jsPsych.timelineVariable("hasGreenInInstruction"),
     instruction_voice: () => sample(["m", "f"]),
     on_start: async (trial) => {
       // console.log(trial.soa)
@@ -274,10 +273,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       // console.log((trial.soa <= 0  === (trial.hasGreenInInstruction != trial.instruction_negated ))? leftKey : rightKey)
       const probeLeft = jsPsych.timelineVariable("probeLeft", true);
 
-      const cond = conditionGenerator.generateCondition(
-        probeLeft,
-        trial.instruction_negated != trial.hasGreenInInstruction
-      );
+      const cond = conditionGenerator.generateCondition(probeLeft);
 
       // Log probeLeft and condition
       trial.data = {
@@ -294,13 +290,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       trial.instruction_language = globalProps.instructionLanguage;
       
       const gridColor = "#777777";
-
-      //trial.instruction_filename = (redInstruction
-      //  ? cond.targets.reference
-      //  : cond.targets.probe
-      //).color.toName();
-
-
 
       // Create targets and grids
       [cond.targets.probe, cond.targets.reference].map((target) => {
@@ -336,7 +325,11 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       }
 
       // Set instruction color
-      trial.instruction_filename = trial.hasGreenInInstruction ? "green" : "red";
+      trial.instruction_filename = (trial.instruction_negated
+        ? cond.targets.reference
+        : cond.targets.probe
+      ).color.toName();
+
     },
     on_load: async () => {
       // Fit to window size
@@ -381,11 +374,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
 
   // Tutorial
   let trialDataTutorial = generateAlternatingSequences(factorsTutorial, 5, true); // generate trials with larger SOAs in tutorial
-
-  trialDataTutorial.trials = trialDataTutorial.trials.map((trial) => ({
-    hasGreenInInstruction: randomInt(0, 1) === 1,
-    ...trial,
-  }));
 
   let trialsTutorial = trialDataTutorial.trials.slice(0, debugmode ? 10 : 30);
   //let trialsTutorial = trials.slicetrials.slice(0, debugmode ? 10 : 30); // or duplicate trials that are actually used
@@ -568,7 +556,6 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
 
   for (let i = 0; i < trials.length; i++) {
     let trial = trials[i];
-    trial.hasGreenInInstruction = randomInt(0, 1) === 1;
     timelineVariablesBlock.push(trial);
 
     if (

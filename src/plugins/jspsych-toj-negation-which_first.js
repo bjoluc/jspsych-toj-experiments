@@ -18,13 +18,6 @@ export class TojPluginWhichFirst extends TojPlugin {
     name: "toj-which_first",
     parameters: {
       ...this.info.parameters,
-      hasGreenInInstruction: {
-        type: jsPsych.plugins.parameterType.BOOLEAN,
-        pretty_name: "has green in instruction",
-        default: true,
-        description:
-          "Is the string \"green\" uttered in the instruction? 0 if \"red\" was uttered, 1 if \"green\" was uttered.",
-      },
       first_key: {
         type: jsPsych.plugins.parameterType.KEYCODE,
         pretty_name: "First key",
