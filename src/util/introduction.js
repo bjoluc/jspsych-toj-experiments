@@ -129,7 +129,7 @@ export function addIntroduction(timeline, options) {
     stimulus: () => {
       return `<iframe class="declaration" src="media/misc/declaration_${globalProps.instructionLanguage}.html"></iframe>`;
     },
-    choices: () => (globalProps.instructionLanguage === "en" ? ["I agree"] : ["Ich stimme zu"]),
+    choices: () => (globalProps.instructionLanguage === "en" ? ["I agree with the terms and conditions"] : ["Ich stimme den Versuchsbedingungen zu"]),
   });
 
   // Instructions to prepare computer
@@ -139,7 +139,7 @@ export function addIntroduction(timeline, options) {
     stimulus: () => {
       return `<iframe class="technical-instruction" src="media/misc/technical_instructions_color_temperature_${globalProps.instructionLanguage}.html"></iframe>`;
     },
-    choices: () => (globalProps.instructionLanguage === "en" ? ["Done"] : ["Habe ich getan"]),
+    choices: () => (globalProps.instructionLanguage === "en" ? ["The blue light filter are deactivated"] : ["Die Blaulichtfilter sind deaktiviert"]),
   });
 
   // Disable dark reader
@@ -150,8 +150,8 @@ export function addIntroduction(timeline, options) {
     },
     choices: () =>
       globalProps.instructionLanguage === "en"
-        ? ["Dark mode is inactive"]
-        : ["Dark mode ist abgeschaltet"],
+        ? ["Dark mode is inactive and my screen is sufficiently small"]
+        : ["Dark mode ist abgeschaltet und mein Bildschirm ist ausreichend klein"],
   });
 
   // Color vision test
