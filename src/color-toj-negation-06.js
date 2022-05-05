@@ -1,12 +1,12 @@
 /**
- * @title Color TOJ Negation 6
+ * @title Color TOJ Neg 6
  * @description Experiment on negation in TVA instructions (dual-colored version with two stimuli, a merge of experiment color-toj-negation-05.js as a skeleton (meta data collection and trial generation) and experiment color-toj-negation-02.js for trial presentation (display of two stimuli instead of two stimuli pairs). This experiment is a replication of color-toj-negation-02.js with controlled sequence lengths of negations/assertions. Aside from that, following improvements / changes were made:
  * - Instruction phase: matched the experiment descriptions in declaration of consent (DSGVO) to the new experiment content (external html, specific to this experiment)
  * - Fix: Translation of headers in written instructions (external html)
  * - Improvement: parametrization of conditions to calculate the correct answer key was customized for this kind of experiment (not judging which stimuli flickered first as in jspsych-toj-negation.js but judge whether probe (instructed color) flickered first or second). The plugin jspsych-toj-negation-which_first.js was developed (derivative of TojPlugin) (specific to this experiment; can be reused)
  * - Instruction phase: discouraged use of large screens
  * - introduction.js: Added prompt asking whether this will be a participant's last session. If so: After finishing the last session: Ask participants about their guess about the hypothesis of this study
- * @version 1.0.0
+ * @version 1.0.1
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
@@ -164,7 +164,7 @@ export function createTimeline() {
   const globalProps = addIntroduction(timeline, {
     skip: false,
     askForLastParticipation: true,
-    experimentName: "Color TOJ Negation 6",
+    experimentName: "Color TOJ-N 6",
     instructions: {
       en: `
 You will see a grid of bars and a point in the middle. Please try to focus the point during the whole experiment.
