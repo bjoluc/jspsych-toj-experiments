@@ -288,10 +288,7 @@ export function addIntroduction(timeline, options) {
   // Instructions
   timeline.push({
     type: "html-button-response",
-    stimulus: () =>
-      marked(
-        globalProps.instructionLanguage === "en" ? options.instructions.en : options.instructions.de
-      ),
+    stimulus: () => marked(options.instructions()),
     choices: () =>
       globalProps.instructionLanguage === "en"
         ? ["Got it, start the tutorial"]
