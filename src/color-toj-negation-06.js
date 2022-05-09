@@ -7,7 +7,7 @@
  * - Instruction phase: discouraged use of large screens
  * - introduction.js: Added prompt asking whether this will be a participant's last session. If so: After finishing the last session: Ask participants about their guess about the hypothesis of this study
  * - Depending on the participant code (that is generated randomly initially), half participants get assigned to a version where the answer keys Q (for "first") and P (for "second") are switched. The same participant code results in the same answer key mapping.
- * @version 2.0.0
+ * @version 2.0.1
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
@@ -578,6 +578,8 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       globalProps.instructionLanguage === "en"
         ? ["<h1>This part of the experiment is finished.</h1><p>Thank you for participating. Press any key or touch to submit the results.</p>"]
         : ["<h1>Vielen Dank für Ihre Teilnahme am Experiment!</h1><p>Drücken Sie eine beliebige Taste oder berühren Sie Ihren Touchscreen um die Resultate abzusenden.</p>"],
+    on_start: bindSpaceTouchAdapterToWindow,
+    on_finish: unbindSpaceTouchAdapterFromWindow,
   }
   
   let timelineVariablesBlock = [];
