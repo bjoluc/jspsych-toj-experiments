@@ -6,7 +6,8 @@
  * - Improvement: parametrization of conditions to calculate the correct answer key was customized for this kind of experiment (not judging which stimuli flickered first as in jspsych-toj-negation.js but judge whether probe (instructed color) flickered first or second). The plugin jspsych-toj-negation-which_first.js was developed (derivative of TojPlugin) (specific to this experiment; can be reused)
  * - Instruction phase: discouraged use of large screens
  * - introduction.js: Added prompt asking whether this will be a participant's last session. If so: After finishing the last session: Ask participants about their guess about the hypothesis of this study
- * @version 1.0.1
+ * - Depending on the participant code (that is generated randomly initially), half participants get assigned to a version where the answer keys Q (for "first") and P (for "second") are switched. The same participant code results in the same answer key mapping.
+ * @version 2.0.1
  * @imageDir images/common
  * @audioDir audio/color-toj-negation,audio/feedback
  * @miscDir misc
@@ -34,9 +35,7 @@ import { Scaler } from "./util/Scaler";
 import { createBarStimulusGrid } from "./util/barStimuli";
 import { setAbsolutePosition } from "./util/positioning";
 import { LabColor } from "./util/colors";
-import { addIntroduction } from "./util/introduction";
-
-
+import { addIntroduction, addInstructions } from "./util/introduction";
 
 const soaChoices = [-6, -3, -1, 0, 1, 3, 6].map((x) => (x * 16.6667).toFixed(3));
 const soaChoicesTutorial = [-6, -3, 3, 6].map((x) => (x * 16.6667).toFixed(3));
@@ -143,8 +142,8 @@ class ConditionGenerator {
 
 const conditionGenerator = new ConditionGenerator();
 
-const leftKey = "q",
-  rightKey = "p";
+const leftKey = "q";
+const rightKey = "p";
 
 export function createTimeline() {
   let timeline = [];
@@ -160,27 +159,61 @@ export function createTimeline() {
     touchAdapterSpace.unbindFromElement(window);
   };
   
-  
-  const globalProps = addIntroduction(timeline, {
-    skip: false,
-    askForLastParticipation: true,
-    experimentName: "Color TOJ-N 6",
-    instructions: {
-      en: `
-You will see a grid of bars and a point in the middle. Please try to focus the point during the whole experiment.
+  var showInstructions = function () {
+    let participantID = globalProps.participantCode;
+    let isAnswerKeySwitchEnabled = participantID.charCodeAt(0) % 2 === 0;
+
+    Object.assign(globalProps, { isAnswerKeySwitchEnabled: isAnswerKeySwitchEnabled });
+    jsPsych.data.addProperties({ isAnswerKeySwitchEnabled: isAnswerKeySwitchEnabled });
+
+    if (debugmode) {
+      console.log(`participantID=${globalProps.participantCode}`);
+      //console.log(`isAnswerKeySwitchEnabled=${isAnswerKeySwitchEnabled}`);
+      console.log(`isAnswerKeySwitchEnabled=${globalProps.isAnswerKeySwitchEnabled}`);
+    }
+
+    let instructionsWithoutKeySwitch = {
+      en: `If it flashed first, press **Q** (or tap on the left half of your screen).
+If it flashed second, press **P** (or tap on the right half of your screen).
+
+Please try to be as exact as possible and avoid mistakes.
+If it is not clear to you whether the bar flashed first or second, you may guess the answer.
+
+If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: **Q** or left tap) or after the green one (i.e. second, response **P** or right tap).`,
+      de: `Hat er zuerst geblinkt (vor dem anderen), drücken Sie **Q** (oder tippen Sie auf die linke Bildschirmhälfte).
+Hat er nach dem anderen, also als zweiter geblinkt, drücken Sie **P** (oder tippen Sie auf die rechte Bildschirmhälfte).
+
+Versuchen Sie, genau zu sein und keine Fehler zu machen.
+Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.
+
+Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann **Q** drücken oder links tippen. Oder hat er nach dem grünen geblinkt? Dann **P** drücken oder rechts tippen.`,
+    };
+    let instructionsWithKeySwitch = {
+      en: `If it flashed first, press **P** (or tap on the right half of your screen).
+If it flashed second, press **Q** (or tap on the left half of your screen).
+
+Please try to be as exact as possible and avoid mistakes.
+If it is not clear to you whether the bar flashed first or second, you may guess the answer.
+
+If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: **P** or right tap) or after the green one (i.e. second, response **Q** or left tap).`,
+      de: `Hat er zuerst geblinkt (vor dem anderen), drücken Sie **P** (oder tippen Sie auf die rechte Bildschirmhälfte).
+Hat er nach dem anderen, also als zweiter geblinkt, drücken Sie **Q** (oder tippen Sie auf die linke Bildschirmhälfte).
+
+Versuchen Sie, genau zu sein und keine Fehler zu machen.
+Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.
+
+Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann **P** drücken oder rechts tippen. Oder hat er nach dem grünen geblinkt? Dann **Q** drücken oder links tippen.`,
+    };
+
+    let instructions = {
+      en: `You will see a grid of bars and a point in the middle. Please try to focus the point during the whole experiment.
 Two of the bars are colored (red or green).
 At the beginning of each trial, you will hear an instruction like "now red" or "not green".
 This informs you which of the bars is relevant for the respective trial.
 Then, each of the colored bars will flash once.
 Based on this, your task is to decide whether the bar indicated by the instruction flashed first or second.
 
-If it flashed first, press **Q** (or tap on the left half of your screen).
-If it flashed second, press **P** (or tap on the right half of your screen).
-
-Please try to be as exact as possible and avoid mistakes.
-If it is not clear to you whether the bar flashed first or second, you may guess the answer.
-
-If, for example, there is a green and a red bar and the voice says “not green” you will have to indicate whether the red bar flashed before the green one (i.e. first, response: **Q** or left tap) or after the green one (i.e. second, response **P** or right tap).
+${isAnswerKeySwitchEnabled ? instructionsWithKeySwitch.en : instructionsWithoutKeySwitch.en}
 
 The experiment will start with a tutorial of 30 trials in which a sound at the end of each trial will indicate whether your answer was correct or not.
 Note that the playback of audio may be delayed for some of the first trials.
@@ -193,18 +226,20 @@ Diese sagt Ihnen, welcher Strich beurteilt werden soll.
 Anschließend wird jeder der farbigen Striche kurz blinken.
 Ihre Aufgabe ist es, zu entscheiden, ob der in der Instruktion benannte Strich zuerst geblinkt hat oder als zweiter.
 
-Hat er zuerst geblinkt (vor dem anderen), drücken Sie **Q** (oder tippen Sie auf die linke Bildschirmhälfte).
-Hat er nach dem anderen, also als zweiter geblinkt, drücken Sie **P** (oder tippen Sie auf die rechte Bildschirmhälfte).
-
-Versuchen Sie, genau zu sein und keine Fehler zu machen.
-Wenn Sie nicht wissen, welcher Strich zuerst war, raten Sie.
-
-Ein Beispiel: Wenn Sie einen grünen und einen roten Strich sehen und die Stimme „nicht grün“ sagt, müssen Sie den roten Strich beurteilen. Hat er vor dem grünen geblinkt? Dann **Q** drücken oder links tippen. Oder hat er nach dem grünen geblinkt? Dann **P** drücken oder rechts tippen.
+${isAnswerKeySwitchEnabled ? instructionsWithKeySwitch.de : instructionsWithoutKeySwitch.de}
 
 Das Experiment beginnt mit einem Tutorial von 30 Durchgängen, in dem Ihnen die Korrektheit jeder Antwort durch ein Geräusch rückgemeldet wird.
 Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       `,
-    },
+    };
+    return globalProps.instructionLanguage === "en" ? instructions.en : instructions.de;
+  };
+
+  const globalProps = addIntroduction(timeline, {
+    skip: false,
+    askForLastParticipation: true,
+    experimentName: "Color TOJ-N6",
+    instructions: showInstructions,
   });
 
   // Generate trials
@@ -242,6 +277,7 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
     trialData = generateAlternatingSequences(factorsDebug, 1, false, 1, false);
   }
  
+
   let trials = trialData.trials;
   let blockCount = trialData.blockCount;
 
@@ -253,14 +289,14 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
   );
 
   let scaler; // Will store the Scaler object for the TOJ plugin
-  
+
   // Create TOJ plugin trial object
   const toj = {
     type: "toj-which_first",
     modification_function: (element) => TojPluginWhichFirst.flashElement(element, "toj-flash", 30),
     soa: jsPsych.timelineVariable("soa"),
-    first_key: () => leftKey,
-    second_key: () => rightKey,
+    first_key: () => (globalProps.isAnswerKeySwitchEnabled ? rightKey : leftKey), //leftKey,
+    second_key: () => (globalProps.isAnswerKeySwitchEnabled ? leftKey : rightKey), //rightKey,
     probe_key: () => "undefined",
     reference_key: () => "undefined",
     instruction_negated: jsPsych.timelineVariable("isInstructionNegated"),
@@ -542,6 +578,8 @@ Die Audiowiedergabe kann bei den ersten Durchgängen leicht verzögert sein.
       globalProps.instructionLanguage === "en"
         ? ["<h1>This part of the experiment is finished.</h1><p>Thank you for participating. Press any key or touch to submit the results.</p>"]
         : ["<h1>Vielen Dank für Ihre Teilnahme am Experiment!</h1><p>Drücken Sie eine beliebige Taste oder berühren Sie Ihren Touchscreen um die Resultate abzusenden.</p>"],
+    on_start: bindSpaceTouchAdapterToWindow,
+    on_finish: unbindSpaceTouchAdapterFromWindow,
   }
   
   let timelineVariablesBlock = [];
