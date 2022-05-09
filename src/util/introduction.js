@@ -150,8 +150,8 @@ export function addIntroduction(timeline, options) {
     },
     choices: () =>
       globalProps.instructionLanguage === "en"
-        ? ["Dark mode is inactive and my screen is sufficiently small"]
-        : ["Dark mode ist abgeschaltet und mein Bildschirm ist ausreichend klein"],
+        ? ["Dark mode is inactive <br>and my screen is sufficiently small"]
+        : ["Dark mode ist abgeschaltet <br>und mein Bildschirm ist ausreichend klein"],
   });
 
   // Color vision test
