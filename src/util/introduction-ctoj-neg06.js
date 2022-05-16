@@ -23,6 +23,7 @@ marked.setOptions({ breaks: true });
  *  * A welcome page with radio buttons for first time participation and language selection, including vsync detection and user agent logging in the background
  *  * A declaration of consent page
  *  * A participation code announcement or input page
+ *  * A page to select if it is the last participation
  *  * An age prompt
  *  * A gender prompt
  *  * A switch-to-fullscreen page
@@ -32,6 +33,7 @@ marked.setOptions({ breaks: true });
  * @param {{
  *   skip?: boolean; // Whether or not to skip the introduction and use default properties; useful for development.
  *   experimentName: string;
+ *   askForLastParticipation: boolean;
  *   instructions: { // Markdown instruction strings
  *     de: string;
  *     en: string;
@@ -40,7 +42,8 @@ marked.setOptions({ breaks: true });
  *
  * @returns {{
  *  instructionLanguage: "de"|"en";
- *  isFirstParticipation: boolean;,
+ *  isFirstParticipation: boolean;
+ *  isLastParticipation: boolean;
  *  participantCode: string;
  * }}
  */
@@ -49,6 +52,7 @@ export function addIntroduction(timeline, options) {
     return {
       instructionLanguage: "en",
       isFirstParticipation: false,
+      isLastParticipation: false,
       participantCode: "ABCD",
     };
   }
@@ -93,13 +97,21 @@ export function addIntroduction(timeline, options) {
     timeline: [
       {
         type: "survey-text",
-        questions: [
-          {
-            prompt:
-              "<p>Please enter your participant code (the one you got the first time you participated in this experiment).</p>",
-            required: true,
-          },
-        ],
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [{ 
+              prompt: 
+                "<p>Please enter your participant code (that you got the first time you participated in this experiment).</p>",
+              required: true,
+            }];
+          } else {
+            return [{ 
+              prompt: 
+                "<p>Bitte geben sie ihren Teilnahme-Code ein (den Sie bei der ersten Teilnahme an diesem Experiment bekommen haben).</p>", 
+              required: true,
+            }];
+          };    
+        },
         on_finish: (trial) => {
           const responses = JSON.parse(trial.responses);
           const newProps = {
@@ -117,7 +129,7 @@ export function addIntroduction(timeline, options) {
     stimulus: () => {
       return `<iframe class="declaration" src="media/misc/declaration_${globalProps.instructionLanguage}.html"></iframe>`;
     },
-    choices: () => (globalProps.instructionLanguage === "en" ? ["I agree"] : ["Ich stimme zu"]),
+    choices: () => (globalProps.instructionLanguage === "en" ? ["I agree with the terms and conditions"] : ["Ich stimme den Versuchsbedingungen zu"]),
   });
 
   // Instructions to prepare computer
@@ -127,7 +139,7 @@ export function addIntroduction(timeline, options) {
     stimulus: () => {
       return `<iframe class="technical-instruction" src="media/misc/technical_instructions_color_temperature_${globalProps.instructionLanguage}.html"></iframe>`;
     },
-    choices: () => (globalProps.instructionLanguage === "en" ? ["Done"] : ["Habe ich getan"]),
+    choices: () => (globalProps.instructionLanguage === "en" ? ["The blue light filter are deactivated"] : ["Die Blaulichtfilter sind deaktiviert"]),
   });
 
   // Disable dark reader
@@ -138,8 +150,8 @@ export function addIntroduction(timeline, options) {
     },
     choices: () =>
       globalProps.instructionLanguage === "en"
-        ? ["Dark mode is inactive"]
-        : ["Dark mode ist abgeschaltet"],
+        ? ["Dark mode is inactive <br>and my screen is sufficiently small"]
+        : ["Dark mode ist abgeschaltet <br>und mein Bildschirm ist ausreichend klein"],
   });
 
   // Color vision test
@@ -199,6 +211,44 @@ export function addIntroduction(timeline, options) {
     ],
   });
 
+  // Ask for last participation
+  timeline.push({
+    conditional_function: () =>
+      options.askForLastParticipation === true && !globalProps.isFirstParticipation,
+    timeline: [
+      {
+        type: "survey-multi-choice",
+        questions: () => {
+          if (globalProps.instructionLanguage === "en") {
+            return [
+              {
+                prompt: "Is this your last participation in this experiment?",
+                options: ["Yes", "No"],
+                required: true,
+              },
+            ];
+          } else {
+            return [
+              {
+                prompt: "Ist dies Ihre letzte Teilnahme an diesem Experiment?",
+                options: ["Ja", "Nein"],
+                required: true,
+              },
+            ];
+          }
+        },
+        on_finish: (trial) => {
+          const responses = JSON.parse(trial.responses);
+          const newProps = {
+            isLastParticipation: responses.Q0 === "Yes" || responses.Q0 === "Ja",
+          };
+          Object.assign(globalProps, newProps);
+          jsPsych.data.addProperties(newProps);
+        },
+      },
+    ],
+  });
+
   // Age prompt
   timeline.push({
     conditional_function: () => globalProps.isFirstParticipation,
@@ -225,15 +275,20 @@ export function addIntroduction(timeline, options) {
   timeline.push({
     type: "fullscreen",
     fullscreen_mode: true,
+    message: () => 
+      globalProps.instructionLanguage === "en"
+        ? ["<p>The experiment will switch to full screen mode when you press the button below.</p>"]
+        : ["<p>Das Experiment wechselt in den Vollbild-Modus, sobald Sie die Schaltfläche betätigen.</p>"],
+    button_label: () => 
+      globalProps.instructionLanguage === "en"
+        ? ["Switch to full screen mode"]
+        : ["In Vollbild-Modus wechseln"],
   });
 
   // Instructions
   timeline.push({
     type: "html-button-response",
-    stimulus: () =>
-      marked(
-        globalProps.instructionLanguage === "en" ? options.instructions.en : options.instructions.de
-      ),
+    stimulus: () => marked(options.instructions()),
     choices: () =>
       globalProps.instructionLanguage === "en"
         ? ["Got it, start the tutorial"]
