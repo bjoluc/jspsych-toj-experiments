@@ -2,11 +2,10 @@
  * Helper functions to add standard introductory jsPsych trials to a jsPsych timeline.
  */
 
-// jsPsych plugins
-import "jspsych/plugins/jspsych-html-button-response";
-import "jspsych/plugins/jspsych-survey-text";
-import "jspsych/plugins/jspsych-survey-multi-choice";
-import "jspsych/plugins/jspsych-fullscreen";
+import SurveyMultiChoicePlugin from "@jspsych/plugin-survey-multi-choice";
+import SurveyTextPlugin from "@jspsych/plugin-survey-text";
+import HtmlButtonResponsePlugin from "@jspsych/plugin-html-button-response";
+import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 
 import estimateVsync from "vsync-estimate";
 import { customAlphabet } from "nanoid";
@@ -28,6 +27,7 @@ marked.setOptions({ breaks: true });
  *  * A switch-to-fullscreen page
  *  * A tutorial page
  *
+ * @param {import("jspsych").JsPsych} jsPsych The jsPsych instance of the experiment
  * @param {any[]} timeline The jsPsych timeline to add the introduction trials to
  * @param {{
  *   skip?: boolean; // Whether or not to skip the introduction and use default properties; useful for development.
@@ -44,7 +44,7 @@ marked.setOptions({ breaks: true });
  *  participantCode: string;
  * }}
  */
-export function addIntroduction(timeline, options) {
+export function addIntroduction(jsPsych, timeline, options) {
   if (options.skip) {
     return {
       instructionLanguage: "en",
@@ -56,7 +56,7 @@ export function addIntroduction(timeline, options) {
   const globalProps = {};
 
   timeline.push({
-    type: "survey-multi-choice",
+    type: SurveyMultiChoicePlugin,
     preamble: `<p>Welcome to the ${options.experimentName} experiment!</p>`,
     questions: [
       {
@@ -75,10 +75,9 @@ export function addIntroduction(timeline, options) {
       trial.data.refreshRate = Math.round(rate);
     },
     on_finish: (trial) => {
-      const responses = JSON.parse(trial.responses);
       const newProps = {
-        isFirstParticipation: responses.Q0 === "Yes",
-        instructionLanguage: responses.Q1 === "Deutsch" ? "de" : "en",
+        isFirstParticipation: trial.response.Q0 === "Yes",
+        instructionLanguage: trial.response.Q1 === "Deutsch" ? "de" : "en",
       };
       Object.assign(globalProps, newProps);
       jsPsych.data.addProperties(newProps);
@@ -92,7 +91,7 @@ export function addIntroduction(timeline, options) {
     conditional_function: () => !globalProps.isFirstParticipation,
     timeline: [
       {
-        type: "survey-text",
+        type: SurveyTextPlugin,
         questions: [
           {
             prompt:
@@ -101,11 +100,9 @@ export function addIntroduction(timeline, options) {
           },
         ],
         on_finish: (trial) => {
-          const responses = JSON.parse(trial.responses);
           const newProps = {
-            participantCode: responses.Q0,
+            participantCode: trial.response.Q0,
           };
-          Object.assign(globalProps, newProps);
           jsPsych.data.addProperties(newProps);
         },
       },
@@ -113,7 +110,7 @@ export function addIntroduction(timeline, options) {
   });
 
   timeline.push({
-    type: "html-button-response",
+    type: HtmlButtonResponsePlugin,
     stimulus: () => {
       return `<iframe class="declaration" src="media/misc/declaration_${globalProps.instructionLanguage}.html"></iframe>`;
     },
@@ -123,7 +120,7 @@ export function addIntroduction(timeline, options) {
   // Instructions to prepare computer
   // Disable any color temperature changeing software / settings
   timeline.push({
-    type: "html-button-response",
+    type: HtmlButtonResponsePlugin,
     stimulus: () => {
       return `<iframe class="technical-instruction" src="media/misc/technical_instructions_color_temperature_${globalProps.instructionLanguage}.html"></iframe>`;
     },
@@ -132,7 +129,7 @@ export function addIntroduction(timeline, options) {
 
   // Disable dark reader
   timeline.push({
-    type: "html-button-response",
+    type: HtmlButtonResponsePlugin,
     stimulus: () => {
       return `<iframe class="technical-instruction" src="media/misc/technical_instructions_dark_reader_${globalProps.instructionLanguage}.html"></iframe>`;
     },
@@ -144,7 +141,7 @@ export function addIntroduction(timeline, options) {
 
   // Color vision test
   timeline.push({
-    type: "html-button-response",
+    type: HtmlButtonResponsePlugin,
     stimulus: () => {
       return `<iframe class="technical-instruction" src="media/misc/technical_instructions_color_vision_${globalProps.instructionLanguage}.html"></iframe>`;
     },
@@ -156,7 +153,7 @@ export function addIntroduction(timeline, options) {
 
   // Turn on sound
   timeline.push({
-    type: "html-button-response",
+    type: HtmlButtonResponsePlugin,
     stimulus: () => {
       return `<iframe class="technical-instruction" src="media/misc/technical_instructions_sound_${globalProps.instructionLanguage}.html"></iframe>`;
     },
@@ -171,7 +168,7 @@ export function addIntroduction(timeline, options) {
     conditional_function: () => globalProps.isFirstParticipation,
     timeline: [
       {
-        type: "html-button-response",
+        type: HtmlButtonResponsePlugin,
         stimulus: () => {
           const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ123456789", 4);
           const participantCode = nanoid();
@@ -204,11 +201,11 @@ export function addIntroduction(timeline, options) {
     conditional_function: () => globalProps.isFirstParticipation,
     timeline: [
       {
-        type: "survey-text",
+        type: SurveyTextPlugin,
         questions: [{ prompt: "Please enter your age.", required: true }],
       },
       {
-        type: "survey-multi-choice",
+        type: SurveyMultiChoicePlugin,
         questions: [
           {
             prompt: "Please select your gender.",
@@ -223,13 +220,13 @@ export function addIntroduction(timeline, options) {
 
   // Switch to fullscreen
   timeline.push({
-    type: "fullscreen",
+    type: FullscreenPlugin,
     fullscreen_mode: true,
   });
 
   // Instructions
   timeline.push({
-    type: "html-button-response",
+    type: HtmlButtonResponsePlugin,
     stimulus: () =>
       marked(
         globalProps.instructionLanguage === "en" ? options.instructions.en : options.instructions.de
